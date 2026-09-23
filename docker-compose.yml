@@ -1,0 +1,17 @@
+services:
+  travel-app:
+    build: .
+    container_name: travel-app
+    user: "1000:1003"
+
+    environment:
+      PORT: 3000
+      DATABASE_PATH: /app/data/travel-app.db
+
+    ports:
+      - "8081:3000"
+
+    volumes:
+      - ./data:/app/data
+
+    restart: unless-stopped
