@@ -57,3 +57,6 @@ export const tripDetailPeriod =
 
 export const tripDetailDescription =
     document.getElementById("trip-detail-description");
+
+export const scheduleList =
+    document.getElementById("schedule-list");

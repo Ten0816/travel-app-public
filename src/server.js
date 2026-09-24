@@ -255,6 +255,52 @@ app.delete("/api/trips/:id", (req, res) => {
 
 
 /* ============================================================
+   Schedules
+   ============================================================ */
+
+/**
+ * 旅行の予定一覧
+ */
+app.get("/api/trips/:id/schedules", (req, res) => {
+    const tripId = Number(req.params.id);
+
+    if (!Number.isInteger(tripId) || tripId <= 0) {
+        return res.status(400).json({
+            error: "Invalid trip id"
+        });
+    }
+
+    const trip = db.prepare(`
+        SELECT id
+        FROM trips
+        WHERE id = ?
+    `).get(tripId);
+
+    if (!trip) {
+        return res.status(404).json({
+            error: "Trip not found"
+        });
+    }
+
+    const schedules = db.prepare(`
+        SELECT *
+        FROM schedules
+        WHERE trip_id = ?
+        ORDER BY
+            sort_order ASC,
+            CASE
+                WHEN start_at IS NULL OR start_at = '' THEN 1
+                ELSE 0
+            END,
+            start_at ASC,
+            id ASC
+    `).all(tripId);
+
+    res.json(schedules);
+});
+
+
+/* ============================================================
    Utility
    ============================================================ */
 
