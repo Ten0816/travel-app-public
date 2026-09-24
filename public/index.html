@@ -91,13 +91,21 @@
             <section class="trip-schedule-section">
 
                 <div class="section-header">
+
                     <div>
                         <h3>予定</h3>
+
                         <p class="section-description">
                             旅行中の予定を管理します。
                         </p>
                     </div>
+
+                    <button id="create-schedule-button" class="primary-button">
+                        ＋ 予定を追加
+                    </button>
+
                 </div>
+
 
                 <div id="schedule-list">
                     予定を読み込んでいます...
@@ -185,6 +193,140 @@
             </form>
 
         </div>
+    </div>
+
+    <!-- =========================================================
+     予定作成モーダル
+     ========================================================= -->
+
+    <div id="schedule-modal" class="modal hidden">
+
+        <div class="modal-backdrop"></div>
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2 id="schedule-modal-title">
+                    予定を追加
+                </h2>
+
+                <button id="close-schedule-modal-button" class="close-button" type="button" aria-label="閉じる">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="schedule-form">
+
+                <div class="form-group">
+
+                    <label for="schedule-title">
+                        予定名
+                    </label>
+
+                    <input id="schedule-title" name="title" type="text" maxlength="200" placeholder="例：東京駅に到着" required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="schedule-type">
+                        種類
+                    </label>
+
+                    <select id="schedule-type" name="type">
+                        <option value="other">
+                            その他
+                        </option>
+
+                        <option value="move">
+                            移動
+                        </option>
+
+                        <option value="sightseeing">
+                            観光
+                        </option>
+
+                        <option value="food">
+                            食事
+                        </option>
+
+                        <option value="hotel">
+                            宿泊
+                        </option>
+                    </select>
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="schedule-start-at">
+                            開始日時
+                        </label>
+
+                        <input id="schedule-start-at" name="start_at" type="datetime-local">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="schedule-end-at">
+                            終了日時
+                        </label>
+
+                        <input id="schedule-end-at" name="end_at" type="datetime-local">
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="schedule-location">
+                        場所
+                    </label>
+
+                    <input id="schedule-location" name="location_name" type="text" maxlength="200" placeholder="例：東京駅">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="schedule-description">
+                        メモ
+                    </label>
+
+                    <textarea id="schedule-description" name="description" rows="4" maxlength="5000"
+                        placeholder="予定についてのメモ"></textarea>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button" id="cancel-schedule-button" class="secondary-button">
+                        キャンセル
+                    </button>
+
+                    <button type="submit" class="primary-button">
+                        保存
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
     </div>
 
     <div id="common-modal" class="modal hidden">

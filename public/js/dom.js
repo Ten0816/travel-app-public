@@ -60,3 +60,45 @@ export const tripDetailDescription =
 
 export const scheduleList =
     document.getElementById("schedule-list");
+
+export const createScheduleButton =
+    document.getElementById("create-schedule-button");
+
+export const scheduleModal =
+    document.getElementById("schedule-modal");
+
+export const scheduleModalTitle =
+    document.getElementById("schedule-modal-title");
+
+export const closeScheduleModalButton =
+    document.getElementById(
+        "close-schedule-modal-button"
+    );
+
+export const cancelScheduleButton =
+    document.getElementById(
+        "cancel-schedule-button"
+    );
+
+export const scheduleForm =
+    document.getElementById("schedule-form");
+
+export const scheduleTitleInput =
+    document.getElementById("schedule-title");
+
+export const scheduleTypeInput =
+    document.getElementById("schedule-type");
+
+export const scheduleStartAtInput =
+    document.getElementById("schedule-start-at");
+
+export const scheduleEndAtInput =
+    document.getElementById("schedule-end-at");
+
+export const scheduleLocationInput =
+    document.getElementById("schedule-location");
+
+export const scheduleDescriptionInput =
+    document.getElementById(
+        "schedule-description"
+    );
