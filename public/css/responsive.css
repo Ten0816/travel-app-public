@@ -1,0 +1,38 @@
+/* ============================================================
+   Mobile
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+    main {
+        padding: 12px;
+    }
+
+    section {
+        padding: 16px;
+    }
+
+    .section-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-row {
+        grid-template-columns: 1fr;
+
+        gap: 4px;
+    }
+
+    .button-group {
+        width: 100%;
+    }
+
+    .button-group button {
+        flex: 1;
+    }
+}

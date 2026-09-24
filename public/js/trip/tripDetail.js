@@ -1,107 +1,118 @@
 import {
-    tripListView,
-    tripDetailView,
-    tripDetailName,
-    tripDetailDate,
-    tripDetailPeriod,
-    tripDetailDescription
+  tripListView,
+  tripDetailView,
+  tripDetailName,
+  tripDetailDate,
+  tripDetailPeriod,
+  tripDetailDescription
 } from "../dom.js";
 
 import {
-    getTrip,
-    deleteTrip
+  getTrip,
+  deleteTrip
 } from "../api/trips.js";
 
 import {
-    getCurrentTrip,
-    setCurrentTrip
+  getCurrentTrip,
+  setCurrentTrip
 } from "../state.js";
 
 import {
-    loadTrips
+  loadTrips
 } from "./tripList.js";
 
 import {
-    formatPeriod
+  formatPeriod
 } from "../utils/date.js";
 
+import {
+  showAlert,
+  showConfirm
+} from "../modal/modal.js";
+
+
 export async function openTripDetail(id) {
-    try {
-        const trip = await getTrip(id);
+  try {
+    const trip = await getTrip(id);
 
-        setCurrentTrip(trip);
+    setCurrentTrip(trip);
 
-        renderTripDetail(trip);
+    renderTripDetail(trip);
 
-        tripListView.classList.add("hidden");
-        tripDetailView.classList.remove("hidden");
+    tripListView.classList.add("hidden");
+    tripDetailView.classList.remove("hidden");
 
-    } catch (error) {
-        console.error(error);
+  } catch (error) {
+    console.error(error);
 
-        alert(
-            "旅行情報を取得できませんでした。"
-        );
-    }
+    await showAlert(
+      "旅行情報を取得できませんでした。"
+    );
+  }
 }
+
 
 export function renderTripDetail(trip) {
-    tripDetailName.textContent =
-        trip.name;
+  tripDetailName.textContent =
+    trip.name;
 
-    const period =
-        formatPeriod(
-            trip.start_date,
-            trip.end_date
-        );
+  const period =
+    formatPeriod(
+      trip.start_date,
+      trip.end_date
+    );
 
-    tripDetailDate.textContent =
-        period;
+  tripDetailDate.textContent =
+    period;
 
-    tripDetailPeriod.textContent =
-        period || "未設定";
+  tripDetailPeriod.textContent =
+    period || "未設定";
 
-    tripDetailDescription.textContent =
-        trip.description ||
-        "メモはありません。";
+  tripDetailDescription.textContent =
+    trip.description ||
+    "メモはありません。";
 }
+
 
 export function showTripList() {
-    setCurrentTrip(null);
+  setCurrentTrip(null);
 
-    tripDetailView.classList.add("hidden");
-    tripListView.classList.remove("hidden");
+  tripDetailView.classList.add("hidden");
+  tripListView.classList.remove("hidden");
 
-    loadTrips();
+  loadTrips();
 }
 
+
 export async function handleDeleteTrip() {
-    const currentTrip =
-        getCurrentTrip();
+  const currentTrip =
+    getCurrentTrip();
 
-    if (!currentTrip) {
-        return;
-    }
+  if (!currentTrip) {
+    return;
+  }
 
-    const confirmed =
-        window.confirm(
-            `「${currentTrip.name}」を削除しますか？\n\nこの操作は元に戻せません。`
-        );
+  const confirmed = await showConfirm(
+    "この旅行を削除しますか？",
+    "この操作は元に戻せません。"
+  );
 
-    if (!confirmed) {
-        return;
-    }
+  if (!confirmed) {
+    return;
+  }
 
-    try {
-        await deleteTrip(
-            currentTrip.id
-        );
+  try {
+    await deleteTrip(
+      currentTrip.id
+    );
 
-        showTripList();
+    showTripList();
 
-    } catch (error) {
-        console.error(error);
+  } catch (error) {
+    console.error(error);
 
-        alert(error.message);
-    }
+    await showAlert(
+      error.message
+    );
+  }
 }

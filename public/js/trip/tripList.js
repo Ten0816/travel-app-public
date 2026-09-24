@@ -14,11 +14,18 @@ import {
     escapeHtml
 } from "../utils/html.js";
 
+import {
+    showAlert
+} from "../modal/modal.js";
+
+
 let onTripSelect = null;
+
 
 export function setTripSelectHandler(handler) {
     onTripSelect = handler;
 }
+
 
 export async function loadTrips() {
     try {
@@ -34,8 +41,13 @@ export async function loadTrips() {
                 旅行情報の読み込みに失敗しました。
             </div>
         `;
+
+        await showAlert(
+            "旅行情報の読み込みに失敗しました。"
+        );
     }
 }
+
 
 export function renderTripList(trips) {
     if (trips.length === 0) {

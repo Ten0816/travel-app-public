@@ -29,6 +29,11 @@ import {
     renderTripDetail
 } from "../trip/tripDetail.js";
 
+import {
+    showAlert
+} from "./modal.js";
+
+
 export function openCreateTripModal() {
     setEditingTripId(null);
 
@@ -41,6 +46,7 @@ export function openCreateTripModal() {
 
     tripNameInput.focus();
 }
+
 
 export function openEditTripModal() {
     const currentTrip =
@@ -74,6 +80,7 @@ export function openEditTripModal() {
     tripNameInput.focus();
 }
 
+
 export function closeTripModal() {
     tripModal.classList.add("hidden");
 
@@ -81,6 +88,7 @@ export function closeTripModal() {
 
     tripForm.reset();
 }
+
 
 async function handleSubmit(event) {
     event.preventDefault();
@@ -125,9 +133,12 @@ async function handleSubmit(event) {
     } catch (error) {
         console.error(error);
 
-        alert(error.message);
+        await showAlert(
+            error.message
+        );
     }
 }
+
 
 export function initializeTripModal() {
     tripForm.addEventListener(
