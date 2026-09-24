@@ -1,47 +1,87 @@
-async function loadTrips() {
-    const tripList = document.getElementById("trip-list");
+import {
+    createTripButton,
+    backToTripListButton,
+    editTripButton,
+    deleteTripButton,
+    closeTripModalButton,
+    cancelTripButton,
+    tripModal
+} from "./dom.js";
 
-    try {
-        const response = await fetch("/api/trips");
+import {
+    loadTrips,
+    setTripSelectHandler
+} from "./trip/tripList.js";
 
-        if (!response.ok) {
-            throw new Error("旅行情報の取得に失敗しました");
-        }
+import {
+    openTripDetail,
+    showTripList,
+    handleDeleteTrip
+} from "./trip/tripDetail.js";
 
-        const trips = await response.json();
+import {
+    openCreateTripModal,
+    openEditTripModal,
+    closeTripModal,
+    initializeTripModal
+} from "./modal/tripModal.js";
 
-        if (trips.length === 0) {
-            tripList.textContent = "旅行がありません。";
-            return;
-        }
 
-        tripList.innerHTML = trips
-            .map(trip => `
-                <article>
-                    <h3>${escapeHtml(trip.name)}</h3>
-                    <p>
-                        ${escapeHtml(trip.start_date || "")}
-                        〜
-                        ${escapeHtml(trip.end_date || "")}
-                    </p>
-                </article>
-            `)
-            .join("");
+/* ============================================================
+   Initialization
+   ============================================================ */
 
-    } catch (error) {
-        console.error(error);
-        tripList.textContent =
-            "旅行情報の読み込みに失敗しました。";
-    }
-}
+setTripSelectHandler(
+    openTripDetail
+);
 
-function escapeHtml(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
+initializeTripModal();
+
+
+/* ============================================================
+   Event
+   ============================================================ */
+
+createTripButton.addEventListener(
+    "click",
+    openCreateTripModal
+);
+
+backToTripListButton.addEventListener(
+    "click",
+    showTripList
+);
+
+editTripButton.addEventListener(
+    "click",
+    openEditTripModal
+);
+
+deleteTripButton.addEventListener(
+    "click",
+    handleDeleteTrip
+);
+
+closeTripModalButton.addEventListener(
+    "click",
+    closeTripModal
+);
+
+cancelTripButton.addEventListener(
+    "click",
+    closeTripModal
+);
+
+tripModal
+    .querySelector(".modal-backdrop")
+    .addEventListener(
+        "click",
+        closeTripModal
+    );
+
+
+/* ============================================================
+   Initial Load
+   ============================================================ */
 
 loadTrips();

@@ -8,11 +8,17 @@
         content="width=device-width, initial-scale=1"
     >
 
-    <meta name="theme-color" content="#ffffff">
+    <meta
+        name="theme-color"
+        content="#ffffff"
+    >
 
     <title>Travel App</title>
 
-    <link rel="stylesheet" href="/css/style.css">
+    <link
+        rel="stylesheet"
+        href="./css/style.css"
+    >
 </head>
 
 <body>
@@ -22,16 +28,216 @@
 </header>
 
 <main>
-    <section>
-        <h2>旅行</h2>
+
+    <!-- =====================================================
+         旅行一覧
+         ===================================================== -->
+
+    <section id="trip-list-view">
+
+        <div class="section-header">
+            <div>
+                <h2>旅行</h2>
+                <p class="section-description">
+                    旅行の予定を管理します。
+                </p>
+            </div>
+
+            <button
+                id="create-trip-button"
+                class="primary-button"
+            >
+                ＋ 新しい旅行
+            </button>
+        </div>
 
         <div id="trip-list">
-            旅行を読み込んでいます...
+            読み込んでいます...
         </div>
+
     </section>
+
+
+    <!-- =====================================================
+         旅行詳細
+         ===================================================== -->
+
+    <section
+        id="trip-detail-view"
+        class="hidden"
+    >
+
+        <button
+            id="back-to-trip-list-button"
+            class="text-button"
+        >
+            ← 旅行一覧
+        </button>
+
+        <div class="section-header">
+            <div>
+                <h2 id="trip-detail-name"></h2>
+                <p
+                    id="trip-detail-date"
+                    class="section-description"
+                ></p>
+            </div>
+
+            <div class="button-group">
+                <button
+                    id="edit-trip-button"
+                    class="secondary-button"
+                >
+                    編集
+                </button>
+
+                <button
+                    id="delete-trip-button"
+                    class="danger-button"
+                >
+                    削除
+                </button>
+            </div>
+        </div>
+
+        <div class="trip-detail-card">
+
+            <div class="detail-row">
+                <span class="detail-label">期間</span>
+                <span id="trip-detail-period"></span>
+            </div>
+
+            <div class="detail-row">
+                <span class="detail-label">メモ</span>
+                <span
+                    id="trip-detail-description"
+                    class="pre-line"
+                ></span>
+            </div>
+
+        </div>
+
+    </section>
+
 </main>
 
-<script type="module" src="/js/app.js"></script>
+
+<!-- =========================================================
+     旅行作成・編集モーダル
+     ========================================================= -->
+
+<div
+    id="trip-modal"
+    class="modal hidden"
+>
+    <div class="modal-backdrop"></div>
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2 id="trip-modal-title">
+                新しい旅行
+            </h2>
+
+            <button
+                id="close-trip-modal-button"
+                class="close-button"
+                aria-label="閉じる"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <form id="trip-form">
+
+            <div class="form-group">
+                <label for="trip-name">
+                    旅行名
+                </label>
+
+                <input
+                    id="trip-name"
+                    name="name"
+                    type="text"
+                    maxlength="100"
+                    placeholder="例：東京旅行"
+                    required
+                >
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label for="trip-start-date">
+                        開始日
+                    </label>
+
+                    <input
+                        id="trip-start-date"
+                        name="start_date"
+                        type="date"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="trip-end-date">
+                        終了日
+                    </label>
+
+                    <input
+                        id="trip-end-date"
+                        name="end_date"
+                        type="date"
+                    >
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <label for="trip-description">
+                    メモ
+                </label>
+
+                <textarea
+                    id="trip-description"
+                    name="description"
+                    rows="5"
+                    maxlength="5000"
+                    placeholder="旅行についてのメモ"
+                ></textarea>
+            </div>
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    id="cancel-trip-button"
+                    class="secondary-button"
+                >
+                    キャンセル
+                </button>
+
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
+                    保存
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+<script
+    type="module"
+    src="./js/app.js"
+></script>
 
 </body>
 </html>
