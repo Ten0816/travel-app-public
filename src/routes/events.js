@@ -76,6 +76,241 @@ router.get(
 
 
 /* ============================================================
+   候補イベント → 予定
+   ============================================================ */
+
+router.post(
+    "/events/:id/move-to-schedule",
+    (req, res) => {
+
+        const eventId =
+            Number(req.params.id);
+
+
+        if (
+            !Number.isInteger(eventId) ||
+            eventId <= 0
+        ) {
+
+            return res.status(400).json({
+                error: "Invalid event id"
+            });
+
+        }
+
+
+        const event =
+            db.prepare(`
+                SELECT *
+                FROM events
+                WHERE id = ?
+            `).get(eventId);
+
+
+        if (!event) {
+
+            return res.status(404).json({
+                error: "Event not found"
+            });
+
+        }
+
+
+        /*
+         * 予定追加モーダルで編集された値を取得
+         *
+         * 値が送られていない場合は、
+         * 元の候補イベントの値を使用する。
+         */
+
+        const title =
+            normalizeString(
+                req.body.title
+            ) || event.title;
+
+
+        if (!title) {
+
+            return res.status(400).json({
+                error: "予定名は必須です"
+            });
+
+        }
+
+
+        const type =
+            normalizeString(
+                req.body.type
+            ) || event.type || "other";
+
+
+        const startAt =
+            normalizeString(
+                req.body.start_at
+            );
+
+
+        const endAt =
+            normalizeString(
+                req.body.end_at
+            );
+
+
+        const locationName =
+            normalizeString(
+                req.body.location_name
+            );
+
+
+        const address =
+            normalizeString(
+                req.body.address
+            );
+
+
+        const latitude =
+            req.body.latitude !== undefined
+                ? req.body.latitude
+                : event.latitude;
+
+
+        const longitude =
+            req.body.longitude !== undefined
+                ? req.body.longitude
+                : event.longitude;
+
+
+        const externalUrl =
+            normalizeString(
+                req.body.external_url
+            );
+
+
+        const description =
+            normalizeString(
+                req.body.description
+            );
+
+
+        const priority =
+            req.body.priority === "high"
+                ? "high"
+                : "normal";
+
+
+        const status =
+            req.body.status === "completed"
+                ? "completed"
+                : req.body.status === "cancelled"
+                    ? "cancelled"
+                    : "planned";
+
+
+        try {
+
+            const move =
+                db.transaction(() => {
+
+                    /*
+                     * 予定を作成
+                     */
+                    const result =
+                        db.prepare(`
+                            INSERT INTO schedules (
+                                trip_id,
+                                title,
+                                start_at,
+                                end_at,
+                                type,
+                                location_name,
+                                address,
+                                latitude,
+                                longitude,
+                                external_url,
+                                description,
+                                priority,
+                                status
+                            )
+                            VALUES (
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?
+                            )
+                        `).run(
+                            event.trip_id,
+                            title,
+                            startAt,
+                            endAt,
+                            type,
+                            locationName,
+                            address,
+                            latitude,
+                            longitude,
+                            externalUrl,
+                            description,
+                            priority,
+                            status
+                        );
+
+
+                    /*
+                     * 作成した予定を取得
+                     */
+                    const schedule =
+                        db.prepare(`
+                            SELECT *
+                            FROM schedules
+                            WHERE id = ?
+                        `).get(
+                            result.lastInsertRowid
+                        );
+
+
+                    /*
+                     * 元の候補イベントを削除
+                     */
+                    db.prepare(`
+                        DELETE FROM events
+                        WHERE id = ?
+                    `).run(eventId);
+
+
+                    return schedule;
+
+                })();
+
+
+            res.json({
+                schedule: move
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            res.status(500).json({
+                error:
+                    "候補イベントを予定に移動できませんでした。"
+            });
+
+        }
+
+    }
+);
+
+
+/* ============================================================
    候補イベント作成
    ============================================================ */
 
@@ -140,13 +375,12 @@ router.post(
         const startAt =
             normalizeString(
                 req.body.start_at
-            );
-
+            ) || event.start_at;
 
         const endAt =
             normalizeString(
                 req.body.end_at
-            );
+            ) || event.end_at;
 
 
         const locationName =
@@ -325,13 +559,12 @@ router.put(
         const startAt =
             normalizeString(
                 req.body.start_at
-            );
-
+            ) || event.start_at;
 
         const endAt =
             normalizeString(
                 req.body.end_at
-            );
+            ) || event.end_at;
 
 
         const locationName =

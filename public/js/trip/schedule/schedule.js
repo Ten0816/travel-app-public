@@ -10,12 +10,8 @@ import {
 } from "../../api/schedules.js";
 
 import {
-    deleteEvent
+    moveEventToSchedule
 } from "../../api/events.js";
-
-import {
-    reloadEvents
-} from "../event.js";
 
 import {
     getCurrentTrip
@@ -33,8 +29,14 @@ import {
 } from "../../modal/scheduleModal.js";
 
 import {
-    reloadSchedules
-} from "./scheduleActions.js";
+    addScheduleToList
+} from "./scheduleRender.js";
+
+import {
+    removeEventFromList
+} from "../event.js";
+
+import "./scheduleActions.js";
 
 
 /* ============================================================
@@ -73,68 +75,122 @@ scheduleForm.addEventListener(
 
         try {
 
-            const data =
-                getScheduleFormData();
-
-
             const editingScheduleId =
                 getEditingScheduleId();
 
 
-            /*
-             * 既存予定の編集
-             */
+            /* ====================================================
+               既存予定の編集
+               ==================================================== */
+
             if (editingScheduleId) {
 
-                await updateSchedule(
-                    editingScheduleId,
-                    data
+                const data =
+                    getScheduleFormData();
+
+
+                const updatedSchedule =
+                    await updateSchedule(
+                        editingScheduleId,
+                        data
+                    );
+
+
+                /*
+                 * サーバーから返ってきた
+                 * 最新データで一覧を更新
+                 *
+                 * 日時を変更した場合も、
+                 * addScheduleToList() が
+                 * 正しい位置へ移動してくれる。
+                 */
+                addScheduleToList(
+                    updatedSchedule
                 );
+
+
+                closeScheduleModalFromOutside();
+
+
+                return;
 
             }
 
 
-            /*
-             * 新規予定の作成
-             */
-            else {
+            /* ====================================================
+               候補イベント → 予定
+               ==================================================== */
 
+            const sourceEventId =
+                scheduleModal.dataset.sourceEventId;
+
+
+            if (sourceEventId) {
+
+                const data =
+                    getScheduleFormData();
+
+
+                const result =
+                    await moveEventToSchedule(
+                        Number(sourceEventId),
+                        data
+                    );
+
+
+                /*
+                 * 移動元の候補イベントを削除
+                 */
+                removeEventFromList(
+                    Number(sourceEventId)
+                );
+
+
+                /*
+                 * 移動先の予定を追加
+                 */
+                if (result.schedule) {
+
+                    addScheduleToList(
+                        result.schedule
+                    );
+
+                }
+
+
+                closeScheduleModalFromOutside();
+
+
+                return;
+
+            }
+
+
+            /* ====================================================
+               通常の新規予定作成
+               ==================================================== */
+
+            const data =
+                getScheduleFormData();
+
+
+            const newSchedule =
                 await createSchedule(
                     currentTrip.id,
                     data
                 );
 
 
-                /*
-                 * 候補イベントから追加された場合、
-                 * 元の候補イベントを削除する
-                 */
-                const sourceEventId =
-                    scheduleModal.dataset.sourceEventId;
-
-
-                if (sourceEventId) {
-
-                    await deleteEvent(
-                        Number(sourceEventId)
-                    );
-
-                }
-
-            }
-
-
             /*
-             * モーダルを閉じる
+             * 作成された予定を
+             * DOMへ直接追加
              */
+            addScheduleToList(
+                newSchedule
+            );
+
+
             closeScheduleModalFromOutside();
-
-
-            /*
-             * 予定・候補イベントを両方更新
-             */
-            await reloadSchedules();
-            await reloadEvents();
 
         } catch (error) {
 

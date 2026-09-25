@@ -40,10 +40,38 @@ let editingEventId = null;
 
 
 /* ============================================================
+   現在表示している候補イベント
+   ============================================================ */
+
+const eventMap =
+    new Map();
+
+
+/* ============================================================
    候補イベント一覧を表示
    ============================================================ */
 
-export function renderEvents(events) {
+export function renderEvents(
+    events
+) {
+
+    /*
+     * 現在のイベント情報を更新
+     */
+    eventMap.clear();
+
+
+    events.forEach(
+        event => {
+
+            eventMap.set(
+                event.id,
+                event
+            );
+
+        }
+    );
+
 
     if (events.length === 0) {
 
@@ -59,126 +87,393 @@ export function renderEvents(events) {
 
     eventList.innerHTML =
         events
-            .map(event => `
+            .map(
+                event =>
+                    createEventCard(
+                        event
+                    )
+            )
+            .join("");
 
-                <div
-                    class="event-card"
-                    data-event-id="${event.id}"
-                >
+}
 
-                    <div class="event-content">
 
-                        <h4 class="event-title">
-                            ${escapeHtml(
-                event.title
-            )}
-                        </h4>
+/* ============================================================
+   候補イベントカード生成
+   ============================================================ */
 
-                        ${event.location_name
+function createEventCard(
+    event
+) {
+
+    return `
+
+        <div
+            class="event-card"
+            data-event-id="${event.id}"
+            data-visited="${event.visited ? "1" : "0"}"
+            data-start-at="${escapeHtml(
+                event.start_at || ""
+            )}"
+        >
+
+            <div class="event-content">
+
+                <h4 class="event-title">
+
+                    ${escapeHtml(
+                        event.title
+                    )}
+
+                </h4>
+
+
+                ${event.location_name
                     ? `
-                        <p class="event-location">
-                            ${escapeHtml(
+                <p class="event-location">
+
+                    ${escapeHtml(
                         event.location_name
                     )}
-                        </p>
-                        `
+
+                </p>
+                `
                     : ""
                 }
 
-                        ${event.address
+
+                ${event.address
                     ? `
-                        <p class="event-address">
-                            ${escapeHtml(
+                <p class="event-address">
+
+                    ${escapeHtml(
                         event.address
                     )}
-                        </p>
-                        `
+
+                </p>
+                `
                     : ""
                 }
 
-                        ${event.start_at
+
+                ${event.start_at
                     ? `
-                        <p class="event-time">
-                            ${formatEventTime(
+                <p class="event-time">
+
+                    ${formatEventTime(
                         event.start_at,
                         event.end_at
                     )}
-                        </p>
-                        `
+
+                </p>
+                `
                     : ""
                 }
 
-                        ${event.external_url
+
+                ${event.external_url
                     ? `
-                        <p class="event-url">
-                            <a
-                                href="${escapeHtml(
-                        event.external_url
-                    )}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                公式サイト・詳細を見る
-                            </a>
-                        </p>
-                        `
+                <p class="event-url">
+
+                    <a
+                        href="${escapeHtml(
+                            event.external_url
+                        )}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        公式サイト・詳細を見る
+                    </a>
+
+                </p>
+                `
                     : ""
                 }
 
-                        ${event.priority === "high"
+
+                ${event.priority === "high"
                     ? `
-                        <p class="event-priority">
-                            優先度：高
-                        </p>
-                        `
+                <p class="event-priority">
+                    優先度：高
+                </p>
+                `
                     : ""
                 }
 
-                        ${event.memo
+
+                ${event.memo
                     ? `
-                        <p class="event-description">
-                            ${escapeHtml(
+                <p class="event-description">
+
+                    ${escapeHtml(
                         event.memo
                     )}
-                        </p>
-                        `
+
+                </p>
+                `
                     : ""
                 }
 
-                    </div>
+            </div>
 
-                    <div class="event-actions">
 
-                        <button
-                            type="button"
-                            class="primary-button event-add-schedule-button"
-                            data-event-id="${event.id}"
-                        >
-                            予定に追加
-                        </button>
+            <div class="event-actions">
 
-                        <button
-                            type="button"
-                            class="secondary-button event-edit-button"
-                            data-event-id="${event.id}"
-                        >
-                            編集
-                        </button>
+                <button
+                    type="button"
+                    class="primary-button event-add-schedule-button"
+                    data-event-id="${event.id}"
+                >
+                    予定に追加
+                </button>
 
-                        <button
-                            type="button"
-                            class="danger-button event-delete-button"
-                            data-event-id="${event.id}"
-                        >
-                            削除
-                        </button>
 
-                    </div>
+                <button
+                    type="button"
+                    class="secondary-button event-edit-button"
+                    data-event-id="${event.id}"
+                >
+                    編集
+                </button>
 
-                </div>
 
-            `)
-            .join("");
+                <button
+                    type="button"
+                    class="danger-button event-delete-button"
+                    data-event-id="${event.id}"
+                >
+                    削除
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+
+/* ============================================================
+   候補イベントを一覧に追加
+   ============================================================ */
+
+export function addEventToList(
+    event
+) {
+
+    /*
+     * ローカル状態を更新
+     */
+    eventMap.set(
+        event.id,
+        event
+    );
+
+
+    /*
+     * 「候補イベントはまだありません」を削除
+     */
+    const emptyMessage =
+        eventList.querySelector(
+            ".section-description"
+        );
+
+
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+
+
+    /*
+     * 同じイベントが既に存在する場合
+     */
+    const existingCard =
+        eventList.querySelector(
+            `.event-card[data-event-id="${event.id}"]`
+        );
+
+
+    if (existingCard) {
+
+        existingCard.outerHTML =
+            createEventCard(
+                event
+            );
+
+        return;
+    }
+
+
+    const newCardHtml =
+        createEventCard(
+            event
+        );
+
+
+    const newSortKey =
+        getEventSortKey(
+            event
+        );
+
+
+    const cards =
+        Array.from(
+            eventList.querySelectorAll(
+                ".event-card"
+            )
+        );
+
+
+    /*
+     * サーバー側と同じ並び順になるように
+     * 挿入位置を決定
+     */
+    const insertBefore =
+        cards.find(
+            card => {
+
+                const cardId =
+                    Number(
+                        card.dataset.eventId
+                    );
+
+
+                const cardStartAt =
+                    card.dataset.startAt ||
+                    null;
+
+
+                const cardVisited =
+                    card.dataset.visited === "1";
+
+
+                const cardSortKey =
+                    getEventSortKey({
+                        id: cardId,
+                        start_at: cardStartAt,
+                        visited: cardVisited
+                    });
+
+
+                return compareEventSortKeys(
+                    newSortKey,
+                    cardSortKey
+                ) < 0;
+
+            }
+        );
+
+
+    if (insertBefore) {
+
+        insertBefore.insertAdjacentHTML(
+            "beforebegin",
+            newCardHtml
+        );
+
+    } else {
+
+        eventList.insertAdjacentHTML(
+            "beforeend",
+            newCardHtml
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   イベントのソートキー
+   ============================================================ */
+
+function getEventSortKey(
+    event
+) {
+
+    const visited =
+        event.visited
+            ? 1
+            : 0;
+
+
+    let time =
+        Number.MAX_SAFE_INTEGER;
+
+
+    if (event.start_at) {
+
+        const parsedTime =
+            new Date(
+                event.start_at
+            ).getTime();
+
+
+        if (
+            !Number.isNaN(
+                parsedTime
+            )
+        ) {
+
+            time =
+                parsedTime;
+
+        }
+
+    }
+
+
+    return {
+        visited,
+        time,
+        id: Number(event.id)
+    };
+
+}
+
+
+/* ============================================================
+   イベントのソートキー比較
+   ============================================================ */
+
+function compareEventSortKeys(
+    a,
+    b
+) {
+
+    /*
+     * 未訪問 → 訪問済み
+     */
+    if (
+        a.visited !==
+        b.visited
+    ) {
+
+        return a.visited -
+            b.visited;
+
+    }
+
+
+    /*
+     * 日時あり → 日時なし
+     */
+    if (
+        a.time !==
+        b.time
+    ) {
+
+        return a.time -
+            b.time;
+
+    }
+
+
+    /*
+     * 最後にID昇順
+     */
+    return a.id -
+        b.id;
 
 }
 
@@ -196,10 +491,12 @@ eventList.addEventListener(
                 ".event-add-schedule-button"
             );
 
+
         const editButton =
             event.target.closest(
                 ".event-edit-button"
             );
+
 
         const deleteButton =
             event.target.closest(
@@ -212,7 +509,9 @@ eventList.addEventListener(
             !editButton &&
             !deleteButton
         ) {
+
             return;
+
         }
 
 
@@ -243,77 +542,66 @@ eventList.addEventListener(
 
         if (addScheduleButton) {
 
-            try {
-
-                const events =
-                    await getEvents(
-                        trip.id
-                    );
+            const targetEvent =
+                eventMap.get(
+                    eventId
+                );
 
 
-                const targetEvent =
-                    events.find(
-                        item =>
-                            item.id === eventId
-                    );
-
-
-                if (!targetEvent) {
-                    return;
-                }
-
-
-                openScheduleModal({
-
-                    title:
-                        targetEvent.title,
-
-                    type:
-                        targetEvent.type,
-
-                    start_at:
-                        targetEvent.start_at,
-
-                    end_at:
-                        targetEvent.end_at,
-
-                    location_name:
-                        targetEvent.location_name,
-
-                    address:
-                        targetEvent.address,
-
-                    latitude:
-                        targetEvent.latitude,
-
-                    longitude:
-                        targetEvent.longitude,
-
-                    external_url:
-                        targetEvent.external_url,
-
-                    priority:
-                        targetEvent.priority,
-
-                    description:
-                        targetEvent.memo,
-
-                    source_event_id:
-                        targetEvent.id
-
-                });
-
-            } catch (error) {
-
-                console.error(error);
+            if (!targetEvent) {
 
                 await showAlert(
-                    "候補イベントを取得できませんでした。"
+                    "候補イベントが見つかりません。"
                 );
+
+                return;
 
             }
 
+
+            openScheduleModal({
+
+                title:
+                    targetEvent.title,
+
+                type:
+                    targetEvent.type,
+
+                start_at:
+                    targetEvent.start_at,
+
+                end_at:
+                    targetEvent.end_at,
+
+                location_name:
+                    targetEvent.location_name,
+
+                address:
+                    targetEvent.address,
+
+                latitude:
+                    targetEvent.latitude,
+
+                longitude:
+                    targetEvent.longitude,
+
+                external_url:
+                    targetEvent.external_url,
+
+                priority:
+                    targetEvent.priority,
+
+                description:
+                    targetEvent.memo,
+
+                source_event_id:
+                    targetEvent.id
+
+            });
+
+
             return;
+
         }
 
 
@@ -323,45 +611,34 @@ eventList.addEventListener(
 
         if (editButton) {
 
-            try {
-
-                const events =
-                    await getEvents(
-                        trip.id
-                    );
-
-
-                const targetEvent =
-                    events.find(
-                        item =>
-                            item.id === eventId
-                    );
-
-
-                if (!targetEvent) {
-                    return;
-                }
-
-
-                editingEventId =
-                    targetEvent.id;
-
-
-                openEventEditModal(
-                    targetEvent
+            const targetEvent =
+                eventMap.get(
+                    eventId
                 );
 
-            } catch (error) {
 
-                console.error(error);
+            if (!targetEvent) {
 
                 await showAlert(
-                    "候補イベントを取得できませんでした。"
+                    "候補イベントが見つかりません。"
                 );
+
+                return;
 
             }
 
+
+            editingEventId =
+                targetEvent.id;
+
+
+            openEventEditModal(
+                targetEvent
+            );
+
+
             return;
+
         }
 
 
@@ -389,11 +666,14 @@ eventList.addEventListener(
                 );
 
 
-                await reloadEvents();
+                removeEventFromList(
+                    eventId
+                );
 
             } catch (error) {
 
                 console.error(error);
+
 
                 await showAlert(
                     error.message ||
@@ -423,7 +703,9 @@ function formatEventTime(
 
 
     const startDate =
-        new Date(startAt);
+        new Date(
+            startAt
+        );
 
 
     if (
@@ -431,7 +713,9 @@ function formatEventTime(
             startDate.getTime()
         )
     ) {
+
         return "";
+
     }
 
 
@@ -453,7 +737,9 @@ function formatEventTime(
 
 
     const endDate =
-        new Date(endAt);
+        new Date(
+            endAt
+        );
 
 
     if (
@@ -461,6 +747,7 @@ function formatEventTime(
             endDate.getTime()
         )
     ) {
+
         return startText;
     }
 
@@ -509,6 +796,10 @@ export async function reloadEvents() {
 
 }
 
+
+/* ============================================================
+   候補イベント初回読み込み
+   ============================================================ */
 
 export async function loadEvents(
     tripId
@@ -569,30 +860,60 @@ eventForm.addEventListener(
                 getEventFormData();
 
 
-            if (editingEventId !== null) {
+            if (
+                editingEventId !==
+                null
+            ) {
 
-                await updateEvent(
-                    editingEventId,
-                    data
+                const updatedEvent =
+                    await updateEvent(
+                        editingEventId,
+                        data
+                    );
+
+
+                eventMap.set(
+                    updatedEvent.id,
+                    updatedEvent
                 );
+
+
+                const card =
+                    eventList.querySelector(
+                        `.event-card[data-event-id="${updatedEvent.id}"]`
+                    );
+
+
+                if (card) {
+
+                    card.outerHTML =
+                        createEventCard(
+                            updatedEvent
+                        );
+
+                }
 
             } else {
 
-                await createEvent(
-                    trip.id,
-                    data
+                const newEvent =
+                    await createEvent(
+                        trip.id,
+                        data
+                    );
+
+
+                addEventToList(
+                    newEvent
                 );
 
             }
 
 
-            editingEventId = null;
+            editingEventId =
+                null;
 
 
             closeEventModal();
-
-
-            await reloadEvents();
 
         } catch (error) {
 
@@ -608,3 +929,45 @@ eventForm.addEventListener(
 
     }
 );
+
+
+/* ============================================================
+   候補イベントを一覧から削除
+   外部から使用
+   ============================================================ */
+
+export function removeEventFromList(
+    eventId
+) {
+
+    eventMap.delete(
+        eventId
+    );
+
+
+    const card =
+        eventList.querySelector(
+            `.event-card[data-event-id="${eventId}"]`
+        );
+
+
+    if (card) {
+        card.remove();
+    }
+
+
+    if (
+        eventList.querySelector(
+            ".event-card"
+        ) === null
+    ) {
+
+        eventList.innerHTML = `
+            <p class="section-description">
+                候補イベントはまだありません。
+            </p>
+        `;
+
+    }
+
+}

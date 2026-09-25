@@ -61,6 +61,148 @@ router.get("/trips/:id/schedules", (req, res) => {
 
 
 /* ============================================================
+   予定 → 候補イベント
+   ============================================================ */
+
+router.post(
+    "/schedules/:id/move-to-event",
+    (req, res) => {
+
+        const scheduleId =
+            Number(req.params.id);
+
+
+        if (
+            !Number.isInteger(scheduleId) ||
+            scheduleId <= 0
+        ) {
+
+            return res.status(400).json({
+                error: "Invalid schedule id"
+            });
+
+        }
+
+
+        const schedule =
+            db.prepare(`
+                SELECT *
+                FROM schedules
+                WHERE id = ?
+            `).get(scheduleId);
+
+
+        if (!schedule) {
+
+            return res.status(404).json({
+                error: "Schedule not found"
+            });
+
+        }
+
+
+        try {
+
+            const move =
+                db.transaction(() => {
+
+                    /*
+                     * 予定を候補イベントとして作成
+                     */
+                    const result =
+                        db.prepare(`
+                            INSERT INTO events (
+                                trip_id,
+                                title,
+                                type,
+                                start_at,
+                                end_at,
+                                location_name,
+                                address,
+                                latitude,
+                                longitude,
+                                external_url,
+                                memo,
+                                priority,
+                                visited
+                            )
+                            VALUES (
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?,
+                                ?
+                            )
+                        `).run(
+                            schedule.trip_id,
+                            schedule.title,
+                            schedule.type,
+                            schedule.start_at,
+                            schedule.end_at,
+                            schedule.location_name,
+                            schedule.address,
+                            schedule.latitude,
+                            schedule.longitude,
+                            schedule.external_url,
+                            schedule.description,
+                            schedule.priority,
+                            0
+                        );
+
+
+                    const event =
+                        db.prepare(`
+                            SELECT *
+                            FROM events
+                            WHERE id = ?
+                        `).get(
+                            result.lastInsertRowid
+                        );
+
+
+                    /*
+                     * 元の予定を削除
+                     */
+                    db.prepare(`
+                        DELETE FROM schedules
+                        WHERE id = ?
+                    `).run(scheduleId);
+
+
+                    return event;
+
+                })();
+
+
+            res.json({
+                event: move
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            res.status(500).json({
+                error:
+                    "予定を候補イベントに移動できませんでした。"
+            });
+
+        }
+
+    }
+);
+
+
+/* ============================================================
    予定を作成
    ============================================================ */
 

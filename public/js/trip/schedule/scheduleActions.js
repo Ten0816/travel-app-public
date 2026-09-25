@@ -4,12 +4,9 @@ import {
 
 import {
     getSchedules,
-    deleteSchedule
+    deleteSchedule,
+    moveScheduleToEvent
 } from "../../api/schedules.js";
-
-import {
-    createEvent
-} from "../../api/events.js";
 
 import {
     getCurrentTrip
@@ -25,11 +22,13 @@ import {
 } from "../../modal/scheduleModal.js";
 
 import {
-    renderSchedules
+    renderSchedules,
+    getScheduleById,
+    removeScheduleFromList
 } from "./scheduleRender.js";
 
 import {
-    reloadEvents
+    addEventToList
 } from "../event.js";
 
 
@@ -69,54 +68,26 @@ export async function handleEditSchedule(
     scheduleId
 ) {
 
-    const currentTrip =
-        getCurrentTrip();
-
-
-    if (!currentTrip) {
-        return;
-    }
-
-
-    try {
-
-        const schedules =
-            await getSchedules(
-                currentTrip.id
-            );
-
-
-        const schedule =
-            schedules.find(
-                item =>
-                    item.id === scheduleId
-            );
-
-
-        if (!schedule) {
-
-            await showAlert(
-                "予定が見つかりません。"
-            );
-
-            return;
-        }
-
-
-        openScheduleEditModal(
-            schedule
+    const schedule =
+        getScheduleById(
+            scheduleId
         );
 
-    } catch (error) {
 
-        console.error(error);
-
+    if (!schedule) {
 
         await showAlert(
-            error.message
+            "予定が見つかりません。"
         );
 
+        return;
+
     }
+
+
+    openScheduleEditModal(
+        schedule
+    );
 
 }
 
@@ -148,7 +119,13 @@ export async function handleDeleteSchedule(
         );
 
 
-        await reloadSchedules();
+        /*
+         * サーバー削除成功後、
+         * DOMとローカルMapから削除
+         */
+        removeScheduleFromList(
+            scheduleId
+        );
 
     } catch (error) {
 
@@ -156,7 +133,8 @@ export async function handleDeleteSchedule(
 
 
         await showAlert(
-            error.message
+            error.message ||
+            "予定の削除に失敗しました。"
         );
 
     }
@@ -168,18 +146,7 @@ export async function handleDeleteSchedule(
    予定を候補イベントに戻す
    ============================================================ */
 
-export async function handleMoveScheduleToEvent(
-    scheduleId
-) {
-
-    const currentTrip =
-        getCurrentTrip();
-
-
-    if (!currentTrip) {
-        return;
-    }
-
+export async function handleMoveScheduleToEvent(scheduleId) {
 
     const confirmed =
         await showConfirm(
@@ -195,90 +162,49 @@ export async function handleMoveScheduleToEvent(
 
     try {
 
-        const schedules =
-            await getSchedules(
-                currentTrip.id
+        const result =
+            await moveScheduleToEvent(
+                scheduleId
             );
 
 
-        const schedule =
-            schedules.find(
-                item =>
-                    item.id === scheduleId
+        console.log(
+            "moveScheduleToEvent result:",
+            result
+        );
+
+
+        if (!result || !result.event) {
+
+            throw new Error(
+                "候補イベントの作成結果を取得できませんでした。"
             );
 
-
-        if (!schedule) {
-
-            await showAlert(
-                "予定が見つかりません。"
-            );
-
-            return;
         }
 
 
         /*
-         * 予定 → 候補イベント
-         *
-         * schedules.description
-         *        ↓
-         * events.memo
+         * 候補イベントとして追加
          */
-        await createEvent(
-            currentTrip.id,
-            {
-                title:
-                    schedule.title,
-
-                type:
-                    schedule.type,
-
-                start_at:
-                    schedule.start_at,
-
-                end_at:
-                    schedule.end_at,
-
-                location_name:
-                    schedule.location_name,
-
-                address:
-                    schedule.address,
-
-                external_url:
-                    schedule.external_url,
-
-                memo:
-                    schedule.description,
-
-                priority:
-                    schedule.priority,
-
-                visited:
-                    false
-            }
+        addEventToList(
+            result.event
         );
 
 
         /*
-         * 候補イベントの作成に成功したら
          * 元の予定を削除
          */
-        await deleteSchedule(
-            schedule.id
+        removeScheduleFromList(
+            scheduleId
         );
 
-
-        /*
-         * 両方の一覧を更新
-         */
-        await reloadSchedules();
-        await reloadEvents();
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "handleMoveScheduleToEvent error:",
+            error
+        );
 
 
         await showAlert(
@@ -317,7 +243,9 @@ scheduleList.addEventListener(
                 scheduleId
             );
 
+
             return;
+
         }
 
 
@@ -339,7 +267,9 @@ scheduleList.addEventListener(
                 scheduleId
             );
 
+
             return;
+
         }
 
 

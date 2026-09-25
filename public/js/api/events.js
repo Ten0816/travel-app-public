@@ -173,3 +173,49 @@ export async function deleteEvent(id) {
         throw new Error(message);
     }
 }
+
+
+export async function moveEventToSchedule(
+    id,
+    data
+) {
+
+    const response =
+        await fetch(
+            `./api/events/${id}/move-to-schedule`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            }
+        );
+
+
+    if (!response.ok) {
+
+        let message =
+            "候補イベントを予定に移動できませんでした。";
+
+
+        try {
+
+            const error =
+                await response.json();
+
+            message =
+                error.error || message;
+
+        } catch {
+        }
+
+
+        throw new Error(message);
+
+    }
+
+
+    return response.json();
+
+}
