@@ -41,6 +41,51 @@ export function openEventModal() {
 
 
 /* ============================================================
+   イベント編集モーダルを開く
+   ============================================================ */
+
+export function openEventEditModal(event) {
+
+    eventModalTitle.textContent =
+        "候補イベントを編集";
+
+
+    eventTitleInput.value =
+        event.title || "";
+
+    eventTypeInput.value =
+        event.type || "other";
+
+    eventStartAtInput.value =
+        event.start_at || "";
+
+    eventEndAtInput.value =
+        event.end_at || "";
+
+    eventLocationInput.value =
+        event.location_name || "";
+
+    eventAddressInput.value =
+        event.address || "";
+
+    eventUrlInput.value =
+        event.external_url || "";
+
+    eventMemoInput.value =
+        event.memo || "";
+
+    eventPriorityInput.value =
+        event.priority || "normal";
+
+
+    eventModal.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/* ============================================================
    イベントモーダルを閉じる
    ============================================================ */
 

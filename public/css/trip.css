@@ -228,3 +228,13 @@
     white-space: pre-line;
     overflow-wrap: anywhere;
 }
+
+.event-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.event-actions button {
+    flex-shrink: 0;
+}

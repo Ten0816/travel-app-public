@@ -30,7 +30,9 @@ import {
 
 import {
     getEvents,
-    createEvent
+    createEvent,
+    updateEvent,
+    deleteEvent
 } from "../api/events.js";
 
 
@@ -72,9 +74,13 @@ import {
 
 import {
     openEventModal,
+    openEventEditModal,
     getEventFormData,
     closeEventModal
 } from "../modal/eventModal.js";
+
+
+let editingEventId = null;
 
 
 /* ============================================================
@@ -286,47 +292,64 @@ export function renderEvents(events) {
 
                         <h4 class="event-title">
                             ${escapeHtml(
-                                event.title
-                            )}
+                event.title
+            )}
                         </h4>
 
-                        ${
-                            event.location_name
-                                ? `
+                        ${event.location_name
+                    ? `
                                     <p class="event-location">
                                         ${escapeHtml(
-                                            event.location_name
-                                        )}
+                        event.location_name
+                    )}
                                     </p>
                                 `
-                                : ""
-                        }
+                    : ""
+                }
 
-                        ${
-                            event.start_at
-                                ? `
+                        ${event.start_at
+                    ? `
                                     <p class="event-time">
                                         ${formatEventTime(
-                                            event.start_at
-                                        )}
+                        event.start_at
+                    )}
                                     </p>
                                 `
-                                : ""
-                        }
+                    : ""
+                }
 
-                        ${
-                            event.memo
-                                ? `
+                        ${event.memo
+                    ? `
                                     <p class="event-description">
                                         ${escapeHtml(
-                                            event.memo
-                                        )}
+                        event.memo
+                    )}
                                     </p>
                                 `
-                                : ""
-                        }
+                    : ""
+                }
 
                     </div>
+
+                    <div class="event-actions">
+
+    <button
+        type="button"
+        class="secondary-button event-edit-button"
+        data-event-id="${event.id}"
+    >
+        編集
+    </button>
+
+    <button
+        type="button"
+        class="danger-button event-delete-button"
+        data-event-id="${event.id}"
+    >
+        削除
+    </button>
+
+</div>
 
                 </div>
 
@@ -334,6 +357,128 @@ export function renderEvents(events) {
             .join("");
 
 }
+
+
+eventList.addEventListener(
+    "click",
+    async event => {
+
+        const editButton =
+            event.target.closest(
+                ".event-edit-button"
+            );
+
+        const deleteButton =
+            event.target.closest(
+                ".event-delete-button"
+            );
+
+        if (!editButton && !deleteButton) {
+            return;
+        }
+
+        const button =
+            editButton || deleteButton;
+
+        const eventId =
+            Number(
+                button.dataset.eventId
+            );
+
+        const trip =
+            getCurrentTrip();
+
+        if (!trip) {
+            return;
+        }
+
+
+        // ========================================================
+        // 編集
+        // ========================================================
+
+        if (editButton) {
+
+            try {
+
+                const events =
+                    await getEvents(trip.id);
+
+                const targetEvent =
+                    events.find(
+                        item =>
+                            item.id === eventId
+                    );
+
+                if (!targetEvent) {
+                    return;
+                }
+
+                editingEventId =
+                    targetEvent.id;
+
+                openEventEditModal(
+                    targetEvent
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+                await showAlert(
+                    "候補イベントを取得できませんでした。"
+                );
+
+            }
+
+            return;
+        }
+
+
+        // ========================================================
+        // 削除確認
+        // ========================================================
+
+        if (deleteButton) {
+
+            const confirmed =
+                await showConfirm(
+                    "この候補イベントを削除しますか？"
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+
+                await deleteEvent(
+                    eventId
+                );
+
+                const events =
+                    await getEvents(
+                        trip.id
+                    );
+
+                renderEvents(
+                    events
+                );
+
+            } catch (error) {
+
+                console.error(error);
+
+                await showAlert(
+                    error.message ||
+                    "候補イベントの削除に失敗しました。"
+                );
+
+            }
+        }
+
+    }
+);
 
 
 /* ============================================================
@@ -784,10 +929,23 @@ eventForm.addEventListener(
             const data =
                 getEventFormData();
 
-            await createEvent(
-                trip.id,
-                data
-            );
+            if (editingEventId !== null) {
+
+                await updateEvent(
+                    editingEventId,
+                    data
+                );
+
+            } else {
+
+                await createEvent(
+                    trip.id,
+                    data
+                );
+
+            }
+
+            editingEventId = null;
 
             closeEventModal();
 
@@ -802,7 +960,7 @@ eventForm.addEventListener(
 
             await showAlert(
                 error.message ||
-                "候補イベントの作成に失敗しました。"
+                "候補イベントの保存に失敗しました。"
             );
 
         }
