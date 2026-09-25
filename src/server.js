@@ -5,6 +5,9 @@ const tripRoutes = require("./routes/trips");
 const scheduleRoutes =
     require("./routes/schedules");
 
+const eventRoutes =
+    require("./routes/events");
+
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -35,6 +38,16 @@ app.use("/api/trips", tripRoutes);
    ============================================================ */
 
 app.use("/api", scheduleRoutes);
+
+
+/* ============================================================
+   Events
+   ============================================================ */
+
+app.use(
+    "/api",
+    eventRoutes
+);
 
 
 /* ============================================================

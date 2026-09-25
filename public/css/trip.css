@@ -80,3 +80,151 @@
 .pre-line {
     white-space: pre-line;
 }
+
+
+/* ============================================================
+   Schedule
+   ============================================================ */
+
+.trip-schedule-section {
+    margin-top: 32px;
+}
+
+#schedule-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.schedule-card {
+    display: grid;
+
+    grid-template-columns: 90px 1fr auto;
+
+    gap: 16px;
+
+    align-items: center;
+
+    padding: 16px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    background: white;
+}
+
+.schedule-time {
+    color: #666;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    white-space: nowrap;
+}
+
+.schedule-content {
+    min-width: 0;
+}
+
+.schedule-title {
+    margin: 0;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    overflow-wrap: anywhere;
+}
+
+.schedule-location {
+    margin: 6px 0 0;
+
+    color: #666;
+
+    font-size: 14px;
+
+    overflow-wrap: anywhere;
+}
+
+.schedule-description {
+    margin: 6px 0 0;
+
+    color: #777;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    white-space: pre-line;
+
+    overflow-wrap: anywhere;
+}
+
+.schedule-actions {
+    display: flex;
+
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+/* ============================================================
+   Candidate Event
+   ============================================================ */
+
+.trip-event-section {
+    margin-top: 32px;
+}
+
+#event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.event-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: white;
+}
+
+.event-content {
+    min-width: 0;
+}
+
+.event-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.event-location {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.event-time {
+    margin: 6px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.event-description {
+    margin: 6px 0 0;
+    color: #777;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}

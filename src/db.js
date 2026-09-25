@@ -41,6 +41,39 @@ db.exec(`
             REFERENCES trips(id)
             ON DELETE CASCADE
     );
+
+        CREATE TABLE IF NOT EXISTS events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        trip_id INTEGER NOT NULL,
+
+        title TEXT NOT NULL,
+
+        type TEXT NOT NULL DEFAULT 'other',
+
+        start_at TEXT,
+        end_at TEXT,
+
+        location_name TEXT,
+        address TEXT,
+
+        latitude REAL,
+        longitude REAL,
+
+        external_url TEXT,
+
+        memo TEXT,
+
+        priority TEXT NOT NULL DEFAULT 'normal',
+
+        visited INTEGER NOT NULL DEFAULT 0,
+
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (trip_id)
+            REFERENCES trips(id)
+            ON DELETE CASCADE
+    );
 `);
 
 

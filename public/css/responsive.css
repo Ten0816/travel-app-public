@@ -1,4 +1,4 @@
-/* ============================================================
+ /* ============================================================
    Mobile
    ============================================================ */
 
@@ -35,4 +35,40 @@
     .button-group button {
         flex: 1;
     }
+
+
+    /* ========================================================
+       Schedule
+       ======================================================== */
+
+    .schedule-card {
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 8px;
+
+        padding: 14px;
+    }
+
+    .schedule-time {
+        font-size: 13px;
+    }
+
+    .schedule-title {
+        font-size: 16px;
+    }
+
+    .schedule-actions {
+        justify-content: flex-end;
+
+        margin-top: 4px;
+    }
+
+    .schedule-actions button {
+        flex: 0 0 auto;
+    }
+
 }

@@ -64,6 +64,16 @@ export const scheduleList =
 export const createScheduleButton =
     document.getElementById("create-schedule-button");
 
+export const createEventButton =
+    document.getElementById(
+        "create-event-button"
+    );
+
+export const eventList =
+    document.getElementById(
+        "event-list"
+    );
+
 export const scheduleModal =
     document.getElementById("schedule-modal");
 
@@ -101,4 +111,74 @@ export const scheduleLocationInput =
 export const scheduleDescriptionInput =
     document.getElementById(
         "schedule-description"
+    );
+
+export const eventModal =
+    document.getElementById(
+        "event-modal"
+    );
+
+export const eventModalTitle =
+    document.getElementById(
+        "event-modal-title"
+    );
+
+export const closeEventModalButton =
+    document.getElementById(
+        "close-event-modal-button"
+    );
+
+export const cancelEventButton =
+    document.getElementById(
+        "cancel-event-button"
+    );
+
+export const eventForm =
+    document.getElementById(
+        "event-form"
+    );
+
+export const eventTitleInput =
+    document.getElementById(
+        "event-title"
+    );
+
+export const eventTypeInput =
+    document.getElementById(
+        "event-type"
+    );
+
+export const eventStartAtInput =
+    document.getElementById(
+        "event-start-at"
+    );
+
+export const eventEndAtInput =
+    document.getElementById(
+        "event-end-at"
+    );
+
+export const eventLocationInput =
+    document.getElementById(
+        "event-location"
+    );
+
+export const eventAddressInput =
+    document.getElementById(
+        "event-address"
+    );
+
+export const eventUrlInput =
+    document.getElementById(
+        "event-url"
+    );
+
+export const eventMemoInput =
+    document.getElementById(
+        "event-memo"
+    );
+
+export const eventPriorityInput =
+    document.getElementById(
+        "event-priority"
     );

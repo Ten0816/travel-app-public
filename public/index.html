@@ -113,6 +113,32 @@
 
             </section>
 
+
+            <section class="trip-event-section">
+
+                <div class="section-header">
+
+                    <div>
+                        <h3>候補イベント</h3>
+
+                        <p class="section-description">
+                            行きたい場所やイベントを登録します。
+                        </p>
+                    </div>
+
+                    <button id="create-event-button" class="primary-button">
+                        ＋ 候補を追加
+                    </button>
+
+                </div>
+
+
+                <div id="event-list">
+                    候補イベントを読み込んでいます...
+                </div>
+
+            </section>
+
         </section>
 
     </main>
@@ -314,6 +340,186 @@
                 <div class="modal-actions">
 
                     <button type="button" id="cancel-schedule-button" class="secondary-button">
+                        キャンセル
+                    </button>
+
+                    <button type="submit" class="primary-button">
+                        保存
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+ 候補イベント作成・編集モーダル
+ ========================================================= -->
+
+    <div id="event-modal" class="modal hidden">
+
+        <div class="modal-backdrop"></div>
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2 id="event-modal-title">
+                    候補イベントを追加
+                </h2>
+
+                <button id="close-event-modal-button" class="close-button" type="button" aria-label="閉じる">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="event-form">
+
+                <div class="form-group">
+
+                    <label for="event-title">
+                        イベント名
+                    </label>
+
+                    <input id="event-title" name="title" type="text" maxlength="200" placeholder="例：○○展" required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="event-type">
+                        種類
+                    </label>
+
+                    <select id="event-type" name="type">
+
+                        <option value="other">
+                            その他
+                        </option>
+
+                        <option value="event">
+                            イベント
+                        </option>
+
+                        <option value="shop">
+                            店舗
+                        </option>
+
+                        <option value="sightseeing">
+                            観光
+                        </option>
+
+                        <option value="food">
+                            食事
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="event-start-at">
+                            開始日時
+                        </label>
+
+                        <input id="event-start-at" name="start_at" type="datetime-local">
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="event-end-at">
+                            終了日時
+                        </label>
+
+                        <input id="event-end-at" name="end_at" type="datetime-local">
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="event-location">
+                        場所
+                    </label>
+
+                    <input id="event-location" name="location_name" type="text" maxlength="200" placeholder="例：東京駅">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="event-address">
+                        住所
+                    </label>
+
+                    <input id="event-address" name="address" type="text" maxlength="500" placeholder="例：東京都千代田区丸の内1丁目">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="event-url">
+                        公式サイト・詳細URL
+                    </label>
+
+                    <input id="event-url" name="external_url" type="url" maxlength="2000"
+                        placeholder="https://example.com">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="event-memo">
+                        メモ
+                    </label>
+
+                    <textarea id="event-memo" name="memo" rows="4" maxlength="5000"
+                        placeholder="イベントについてのメモ"></textarea>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="event-priority">
+                        優先度
+                    </label>
+
+                    <select id="event-priority" name="priority">
+
+                        <option value="normal">
+                            通常
+                        </option>
+
+                        <option value="high">
+                            高い
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button" id="cancel-event-button" class="secondary-button">
                         キャンセル
                     </button>
 

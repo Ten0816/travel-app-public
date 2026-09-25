@@ -7,7 +7,10 @@ import {
     tripDetailDescription,
     scheduleList,
     createScheduleButton,
-    scheduleForm
+    scheduleForm,
+    createEventButton,
+    eventForm,
+    eventList
 } from "../dom.js";
 
 
@@ -23,6 +26,12 @@ import {
     updateSchedule,
     deleteSchedule
 } from "../api/schedules.js";
+
+
+import {
+    getEvents,
+    createEvent
+} from "../api/events.js";
 
 
 import {
@@ -61,6 +70,13 @@ import {
 } from "../modal/scheduleModal.js";
 
 
+import {
+    openEventModal,
+    getEventFormData,
+    closeEventModal
+} from "../modal/eventModal.js";
+
+
 /* ============================================================
    旅行詳細を開く
    ============================================================ */
@@ -76,6 +92,9 @@ export async function openTripDetail(id) {
         const schedules =
             await getSchedules(id);
 
+        const events =
+            await getEvents(id);
+
 
         setCurrentTrip(trip);
 
@@ -83,6 +102,8 @@ export async function openTripDetail(id) {
         renderTripDetail(trip);
 
         renderSchedules(schedules);
+
+        renderEvents(events);
 
 
         tripListView.classList.add(
@@ -169,41 +190,39 @@ export function renderSchedules(schedules) {
 
                     <div class="schedule-time">
                         ${formatScheduleTime(
-                            schedule.start_at
-                        )}
+                schedule.start_at
+            )}
                     </div>
 
                     <div class="schedule-content">
 
                         <h4 class="schedule-title">
                             ${escapeHtml(
-                                schedule.title
-                            )}
+                schedule.title
+            )}
                         </h4>
 
-                        ${
-                            schedule.location_name
-                                ? `
+                        ${schedule.location_name
+                    ? `
                                     <p class="schedule-location">
                                         ${escapeHtml(
-                                            schedule.location_name
-                                        )}
+                        schedule.location_name
+                    )}
                                     </p>
                                 `
-                                : ""
-                        }
+                    : ""
+                }
 
-                        ${
-                            schedule.description
-                                ? `
+                        ${schedule.description
+                    ? `
                                     <p class="schedule-description">
                                         ${escapeHtml(
-                                            schedule.description
-                                        )}
+                        schedule.description
+                    )}
                                     </p>
                                 `
-                                : ""
-                        }
+                    : ""
+                }
 
                     </div>
 
@@ -232,6 +251,124 @@ export function renderSchedules(schedules) {
 
             `)
             .join("");
+
+}
+
+
+/* ============================================================
+   候補イベント一覧を表示
+   ============================================================ */
+
+export function renderEvents(events) {
+
+    if (events.length === 0) {
+
+        eventList.innerHTML = `
+            <p class="section-description">
+                候補イベントはまだありません。
+            </p>
+        `;
+
+        return;
+    }
+
+
+    eventList.innerHTML =
+        events
+            .map(event => `
+
+                <div
+                    class="event-card"
+                    data-event-id="${event.id}"
+                >
+
+                    <div class="event-content">
+
+                        <h4 class="event-title">
+                            ${escapeHtml(
+                                event.title
+                            )}
+                        </h4>
+
+                        ${
+                            event.location_name
+                                ? `
+                                    <p class="event-location">
+                                        ${escapeHtml(
+                                            event.location_name
+                                        )}
+                                    </p>
+                                `
+                                : ""
+                        }
+
+                        ${
+                            event.start_at
+                                ? `
+                                    <p class="event-time">
+                                        ${formatEventTime(
+                                            event.start_at
+                                        )}
+                                    </p>
+                                `
+                                : ""
+                        }
+
+                        ${
+                            event.memo
+                                ? `
+                                    <p class="event-description">
+                                        ${escapeHtml(
+                                            event.memo
+                                        )}
+                                    </p>
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+                </div>
+
+            `)
+            .join("");
+
+}
+
+
+/* ============================================================
+   候補イベント日時を表示
+   ============================================================ */
+
+function formatEventTime(value) {
+
+    if (!value) {
+        return "";
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
+
+    return date.toLocaleString(
+        "ja-JP",
+        {
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
 
 }
 
@@ -607,6 +744,65 @@ scheduleList.addEventListener(
 
             handleDeleteSchedule(
                 scheduleId
+            );
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   候補イベント追加
+   ============================================================ */
+
+createEventButton.addEventListener(
+    "click",
+    () => {
+
+        openEventModal();
+
+    }
+);
+
+
+eventForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const trip =
+            getCurrentTrip();
+
+        if (!trip) {
+            return;
+        }
+
+        try {
+
+            const data =
+                getEventFormData();
+
+            await createEvent(
+                trip.id,
+                data
+            );
+
+            closeEventModal();
+
+            const events =
+                await getEvents(trip.id);
+
+            renderEvents(events);
+
+        } catch (error) {
+
+            console.error(error);
+
+            await showAlert(
+                error.message ||
+                "候補イベントの作成に失敗しました。"
             );
 
         }
