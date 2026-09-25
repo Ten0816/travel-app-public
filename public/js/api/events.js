@@ -103,6 +103,44 @@ export async function updateEvent(id, data) {
 }
 
 
+export async function updateEventVisited(
+    id,
+    visited
+) {
+    const response =
+        await fetch(
+            `./api/events/${id}/visited`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    visited
+                })
+            }
+        );
+
+    if (!response.ok) {
+        let message =
+            "訪問済み状態の変更に失敗しました。";
+
+        try {
+            const error =
+                await response.json();
+
+            message =
+                error.error || message;
+
+        } catch {}
+
+        throw new Error(message);
+    }
+
+    return response.json();
+}
+
+
 export async function deleteEvent(id) {
 
     const response =

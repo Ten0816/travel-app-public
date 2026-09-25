@@ -122,26 +122,57 @@ router.post("/trips/:id/schedules", (req, res) => {
     const description =
         normalizeString(req.body.description);
 
+    const address =
+        normalizeString(req.body.address);
+
+    const latitude =
+        req.body.latitude ?? null;
+
+    const longitude =
+        req.body.longitude ?? null;
+
+    const externalUrl =
+        normalizeString(req.body.external_url);
+
+    console.log(
+    "schedule external_url:",
+    externalUrl
+);
+
+    const priority =
+        normalizeString(req.body.priority) ||
+        "normal";
+
 
     const result = db.prepare(`
-        INSERT INTO schedules (
-            trip_id,
-            title,
-            start_at,
-            end_at,
-            type,
-            location_name,
-            description
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(
+    INSERT INTO schedules (
+        trip_id,
+        title,
+        start_at,
+        end_at,
+        type,
+        location_name,
+        address,
+        latitude,
+        longitude,
+        external_url,
+        description,
+        priority
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`).run(
         tripId,
         title,
         startAt,
         endAt,
         type,
         locationName,
-        description
+        address,
+        latitude,
+        longitude,
+        externalUrl,
+        description,
+        priority
     );
 
 

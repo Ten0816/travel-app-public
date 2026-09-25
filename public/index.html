@@ -272,6 +272,14 @@
                             移動
                         </option>
 
+                        <option value="event">
+                            イベント
+                        </option>
+
+                        <option value="shop">
+                            ショップ
+                        </option>
+
                         <option value="sightseeing">
                             観光
                         </option>
@@ -327,12 +335,57 @@
 
                 <div class="form-group">
 
+                    <label for="schedule-address">
+                        住所
+                    </label>
+
+                    <input id="schedule-address" name="address" type="text" maxlength="500"
+                        placeholder="例：東京都千代田区丸の内1丁目">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="schedule-url">
+                        公式サイト・詳細URL
+                    </label>
+
+                    <input id="schedule-url" name="external_url" type="url" maxlength="2000"
+                        placeholder="https://example.com">
+
+                </div>
+
+
+                <div class="form-group">
+
                     <label for="schedule-description">
                         メモ
                     </label>
 
                     <textarea id="schedule-description" name="description" rows="4" maxlength="5000"
                         placeholder="予定についてのメモ"></textarea>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="schedule-priority">
+                        優先度
+                    </label>
+
+                    <select id="schedule-priority" name="priority">
+
+                        <option value="normal">
+                            通常
+                        </option>
+
+                        <option value="high">
+                            高い
+                        </option>
+
+                    </select>
 
                 </div>
 

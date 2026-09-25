@@ -101,7 +101,7 @@
 .schedule-card {
     display: grid;
 
-    grid-template-columns: 90px 1fr auto;
+    grid-template-columns: 150px minmax(0, 1fr) auto;
 
     gap: 16px;
 
@@ -117,13 +117,26 @@
 }
 
 .schedule-time {
+    min-width: 0;
+
     color: #666;
 
     font-size: 14px;
 
     line-height: 1.5;
+}
+
+.schedule-time-start,
+.schedule-time-end {
+    display: block;
 
     white-space: nowrap;
+}
+
+.schedule-time-separator {
+    display: block;
+
+    margin: 2px 0;
 }
 
 .schedule-content {
@@ -214,6 +227,36 @@
     overflow-wrap: anywhere;
 }
 
+.event-address {
+    margin: 6px 0 0;
+
+    color: #666;
+
+    font-size: 14px;
+
+    overflow-wrap: anywhere;
+}
+
+.event-url {
+    margin: 6px 0 0;
+
+    font-size: 14px;
+
+    overflow-wrap: anywhere;
+}
+
+.event-url a {
+    color: inherit;
+}
+
+.event-priority {
+    margin: 6px 0 0;
+
+    color: #666;
+
+    font-size: 14px;
+}
+
 .event-time {
     margin: 6px 0 0;
     color: #666;
@@ -237,4 +280,26 @@
 
 .event-actions button {
     flex-shrink: 0;
+}
+
+.schedule-address {
+    margin: 6px 0 0;
+
+    color: #666;
+
+    font-size: 14px;
+
+    overflow-wrap: anywhere;
+}
+
+.schedule-url {
+    margin: 6px 0 0;
+
+    font-size: 14px;
+
+    overflow-wrap: anywhere;
+}
+
+.schedule-url a {
+    color: inherit;
 }

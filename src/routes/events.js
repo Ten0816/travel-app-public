@@ -303,6 +303,57 @@ router.put("/events/:id", (req, res) => {
 });
 
 
+/* ============================================================
+   訪問済み状態を変更
+   ============================================================ */
+
+router.patch("/events/:id/visited", (req, res) => {
+
+    const id =
+        Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            error: "Invalid event id"
+        });
+    }
+
+    const event = db.prepare(`
+        SELECT id, visited
+        FROM events
+        WHERE id = ?
+    `).get(id);
+
+    if (!event) {
+        return res.status(404).json({
+            error: "Event not found"
+        });
+    }
+
+    const visited =
+        req.body.visited ? 1 : 0;
+
+    db.prepare(`
+        UPDATE events
+        SET
+            visited = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `).run(
+        visited,
+        id
+    );
+
+    const updatedEvent = db.prepare(`
+        SELECT *
+        FROM events
+        WHERE id = ?
+    `).get(id);
+
+    res.json(updatedEvent);
+});
+
+
  /* ============================================================
     候補イベント削除
     ============================================================ */

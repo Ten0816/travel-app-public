@@ -9,6 +9,9 @@ import {
     scheduleStartAtInput,
     scheduleEndAtInput,
     scheduleLocationInput,
+    scheduleAddressInput,
+    scheduleUrlInput,
+    schedulePriorityInput,
     scheduleDescriptionInput
 } from "../dom.js";
 
@@ -30,7 +33,9 @@ function closeScheduleModal() {
    予定追加モーダルを開く
    ============================================================ */
 
-export function openScheduleModal() {
+export function openScheduleModal(
+    initialData = null
+) {
 
     scheduleModalTitle.textContent =
         "予定を追加";
@@ -38,9 +43,56 @@ export function openScheduleModal() {
 
     scheduleForm.reset();
 
-
     scheduleModal.dataset.scheduleId =
         "";
+
+    scheduleModal.dataset.latitude =
+        "";
+
+    scheduleModal.dataset.longitude =
+        "";
+
+
+    if (initialData) {
+
+        scheduleTitleInput.value =
+            initialData.title || "";
+
+        scheduleTypeInput.value =
+            initialData.type || "other";
+
+        scheduleStartAtInput.value =
+            formatDateTimeLocal(
+                initialData.start_at
+            );
+
+        scheduleEndAtInput.value =
+            formatDateTimeLocal(
+                initialData.end_at
+            );
+
+        scheduleLocationInput.value =
+            initialData.location_name || "";
+
+        scheduleAddressInput.value =
+            initialData.address || "";
+
+        scheduleUrlInput.value =
+            initialData.external_url || "";
+
+        schedulePriorityInput.value =
+            initialData.priority || "normal";
+
+        scheduleModal.dataset.latitude =
+            initialData.latitude ?? "";
+
+        scheduleModal.dataset.longitude =
+            initialData.longitude ?? "";
+
+        scheduleDescriptionInput.value =
+            initialData.description || "";
+
+    }
 
 
     scheduleModal.classList.remove(
@@ -92,6 +144,20 @@ export function openScheduleEditModal(
     scheduleLocationInput.value =
         schedule.location_name || "";
 
+    scheduleAddressInput.value =
+        schedule.address || "";
+
+    scheduleUrlInput.value =
+        schedule.external_url || "";
+
+    schedulePriorityInput.value =
+        schedule.priority || "normal";
+
+    scheduleModal.dataset.latitude =
+        schedule.latitude ?? "";
+
+    scheduleModal.dataset.longitude =
+        schedule.longitude ?? "";
 
     scheduleDescriptionInput.value =
         schedule.description || "";
@@ -204,9 +270,7 @@ scheduleModal.addEventListener(
    ============================================================ */
 
 export function getScheduleFormData() {
-
     return {
-
         title:
             scheduleTitleInput.value,
 
@@ -222,11 +286,24 @@ export function getScheduleFormData() {
         location_name:
             scheduleLocationInput.value,
 
+        address:
+            scheduleAddressInput.value,
+
+        external_url:
+            scheduleUrlInput.value,
+
+        priority:
+            schedulePriorityInput.value,
+
+        latitude:
+            scheduleModal.dataset.latitude || null,
+
+        longitude:
+            scheduleModal.dataset.longitude || null,
+
         description:
             scheduleDescriptionInput.value
-
     };
-
 }
 
 

@@ -76,5 +76,49 @@ db.exec(`
     );
 `);
 
+/* ============================================================
+   schedules テーブルの追加カラム
+   ============================================================ */
+
+const scheduleColumns =
+    db.prepare(`
+        PRAGMA table_info(schedules)
+    `).all();
+
+const scheduleColumnNames =
+    scheduleColumns.map(
+        column => column.name
+    );
+
+
+if (!scheduleColumnNames.includes("address")) {
+
+    db.exec(`
+        ALTER TABLE schedules
+        ADD COLUMN address TEXT
+    `);
+
+}
+
+
+if (!scheduleColumnNames.includes("external_url")) {
+
+    db.exec(`
+        ALTER TABLE schedules
+        ADD COLUMN external_url TEXT
+    `);
+
+}
+
+
+if (!scheduleColumnNames.includes("priority")) {
+
+    db.exec(`
+        ALTER TABLE schedules
+        ADD COLUMN priority TEXT NOT NULL DEFAULT 'normal'
+    `);
+
+}
+
 
 module.exports = db;

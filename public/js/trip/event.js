@@ -31,6 +31,10 @@ import {
     closeEventModal
 } from "../modal/eventModal.js";
 
+import {
+    openScheduleModal
+} from "../modal/scheduleModal.js";
+
 
 let editingEventId = null;
 
@@ -72,40 +76,86 @@ export function renderEvents(events) {
 
                         ${event.location_name
                     ? `
-                                    <p class="event-location">
-                                        ${escapeHtml(
+        <p class="event-location">
+            ${escapeHtml(
                         event.location_name
                     )}
-                                    </p>
-                                `
+        </p>
+    `
                     : ""
                 }
 
-                        ${event.start_at
+${event.address
                     ? `
-                                    <p class="event-time">
-                                        ${formatEventTime(
-                        event.start_at
+        <p class="event-address">
+            ${escapeHtml(
+                        event.address
                     )}
-                                    </p>
-                                `
+        </p>
+    `
                     : ""
                 }
 
-                        ${event.memo
+${event.start_at
                     ? `
-                                    <p class="event-description">
-                                        ${escapeHtml(
+        <p class="event-time">
+            ${formatEventTime(
+                        event.start_at,
+                        event.end_at
+                    )}
+        </p>
+    `
+                    : ""
+                }
+
+${event.external_url
+                    ? `
+        <p class="event-url">
+            <a
+                href="${escapeHtml(
+                        event.external_url
+                    )}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                公式サイト・詳細を見る
+            </a>
+        </p>
+    `
+                    : ""
+                }
+
+${event.priority === "high"
+                    ? `
+        <p class="event-priority">
+            優先度：高
+        </p>
+    `
+                    : ""
+                }
+
+${event.memo
+                    ? `
+        <p class="event-description">
+            ${escapeHtml(
                         event.memo
                     )}
-                                    </p>
-                                `
+        </p>
+    `
                     : ""
                 }
 
                     </div>
 
                     <div class="event-actions">
+
+    <button
+        type="button"
+        class="primary-button event-add-schedule-button"
+        data-event-id="${event.id}"
+    >
+        予定に追加
+    </button>
 
     <button
         type="button"
@@ -137,6 +187,11 @@ eventList.addEventListener(
     "click",
     async event => {
 
+        const addScheduleButton =
+            event.target.closest(
+                ".event-add-schedule-button"
+            );
+
         const editButton =
             event.target.closest(
                 ".event-edit-button"
@@ -147,12 +202,18 @@ eventList.addEventListener(
                 ".event-delete-button"
             );
 
-        if (!editButton && !deleteButton) {
+        if (
+            !addScheduleButton &&
+            !editButton &&
+            !deleteButton
+        ) {
             return;
         }
 
         const button =
-            editButton || deleteButton;
+            addScheduleButton ||
+            editButton ||
+            deleteButton;
 
         const eventId =
             Number(
@@ -163,6 +224,74 @@ eventList.addEventListener(
             getCurrentTrip();
 
         if (!trip) {
+            return;
+        }
+
+
+        if (addScheduleButton) {
+
+            try {
+
+                const events =
+                    await getEvents(
+                        trip.id
+                    );
+
+                const targetEvent =
+                    events.find(
+                        item =>
+                            item.id === eventId
+                    );
+
+                if (!targetEvent) {
+                    return;
+                }
+
+                openScheduleModal({
+                    title:
+                        targetEvent.title,
+
+                    type:
+                        targetEvent.type,
+
+                    start_at:
+                        targetEvent.start_at,
+
+                    end_at:
+                        targetEvent.end_at,
+
+                    location_name:
+                        targetEvent.location_name,
+
+                    address:
+                        targetEvent.address,
+
+                    latitude:
+                        targetEvent.latitude,
+
+                    longitude:
+                        targetEvent.longitude,
+
+                    external_url:
+                        targetEvent.external_url,
+
+                    priority:
+                        targetEvent.priority,
+
+                    description:
+                        targetEvent.memo
+                });
+
+            } catch (error) {
+
+                console.error(error);
+
+                await showAlert(
+                    "候補イベントを取得できませんでした。"
+                );
+
+            }
+
             return;
         }
 
@@ -252,36 +381,63 @@ eventList.addEventListener(
    候補イベント日時を表示
    ============================================================ */
 
-function formatEventTime(value) {
-
-    if (!value) {
+function formatEventTime(
+    startAt,
+    endAt
+) {
+    if (!startAt) {
         return "";
     }
 
-
-    const date =
-        new Date(value);
-
+    const startDate =
+        new Date(startAt);
 
     if (
         Number.isNaN(
-            date.getTime()
+            startDate.getTime()
         )
     ) {
         return "";
     }
 
+    const startText =
+        startDate.toLocaleString(
+            "ja-JP",
+            {
+                month: "numeric",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
 
-    return date.toLocaleString(
-        "ja-JP",
-        {
-            month: "numeric",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
+    if (!endAt) {
+        return startText;
+    }
 
+    const endDate =
+        new Date(endAt);
+
+    if (
+        Number.isNaN(
+            endDate.getTime()
+        )
+    ) {
+        return startText;
+    }
+
+    const endText =
+        endDate.toLocaleString(
+            "ja-JP",
+            {
+                month: "numeric",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    return `${startText} ～ ${endText}`;
 }
 
 
@@ -331,7 +487,7 @@ export async function loadEvents(
 createEventButton.addEventListener(
     "click",
     () => {
-        
+
         editingEventId = null;
 
         openEventModal();

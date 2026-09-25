@@ -108,6 +108,15 @@ export const scheduleEndAtInput =
 export const scheduleLocationInput =
     document.getElementById("schedule-location");
 
+export const scheduleAddressInput =
+    document.getElementById("schedule-address");
+
+export const scheduleUrlInput =
+    document.getElementById("schedule-url");
+
+export const schedulePriorityInput =
+    document.getElementById("schedule-priority");
+
 export const scheduleDescriptionInput =
     document.getElementById(
         "schedule-description"
