@@ -32,7 +32,7 @@ import {
 
 import {
     renderSchedules
-} from "./schedule.js";
+} from "./schedule/scheduleRender.js";
 
 
 import {
