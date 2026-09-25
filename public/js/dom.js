@@ -117,6 +117,9 @@ export const scheduleUrlInput =
 export const schedulePriorityInput =
     document.getElementById("schedule-priority");
 
+export const scheduleStatusInput =
+    document.getElementById("schedule-status");
+
 export const scheduleDescriptionInput =
     document.getElementById(
         "schedule-description"

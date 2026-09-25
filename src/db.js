@@ -121,4 +121,12 @@ if (!scheduleColumnNames.includes("priority")) {
 }
 
 
+if (!scheduleColumnNames.includes("status")) {
+    db.exec(`
+        ALTER TABLE schedules
+        ADD COLUMN status TEXT NOT NULL DEFAULT 'planned'
+    `);
+}
+
+
 module.exports = db;

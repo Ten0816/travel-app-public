@@ -12,6 +12,7 @@ import {
     scheduleAddressInput,
     scheduleUrlInput,
     schedulePriorityInput,
+    scheduleStatusInput,
     scheduleDescriptionInput
 } from "../dom.js";
 
@@ -53,6 +54,13 @@ export function openScheduleModal(
         "";
 
 
+    /*
+     * 新規作成時の初期値
+     */
+    scheduleStatusInput.value =
+        "planned";
+
+
     if (initialData) {
 
         scheduleTitleInput.value =
@@ -82,6 +90,9 @@ export function openScheduleModal(
 
         schedulePriorityInput.value =
             initialData.priority || "normal";
+
+        scheduleStatusInput.value =
+            initialData.status || "planned";
 
         scheduleModal.dataset.latitude =
             initialData.latitude ?? "";
@@ -144,20 +155,30 @@ export function openScheduleEditModal(
     scheduleLocationInput.value =
         schedule.location_name || "";
 
+
     scheduleAddressInput.value =
         schedule.address || "";
+
 
     scheduleUrlInput.value =
         schedule.external_url || "";
 
+
     schedulePriorityInput.value =
         schedule.priority || "normal";
+
+
+    scheduleStatusInput.value =
+        schedule.status || "planned";
+
 
     scheduleModal.dataset.latitude =
         schedule.latitude ?? "";
 
+
     scheduleModal.dataset.longitude =
         schedule.longitude ?? "";
+
 
     scheduleDescriptionInput.value =
         schedule.description || "";
@@ -294,6 +315,9 @@ export function getScheduleFormData() {
 
         priority:
             schedulePriorityInput.value,
+
+        status:
+            scheduleStatusInput.value,
 
         latitude:
             scheduleModal.dataset.latitude || null,

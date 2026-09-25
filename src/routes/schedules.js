@@ -122,45 +122,57 @@ router.post("/trips/:id/schedules", (req, res) => {
     const description =
         normalizeString(req.body.description);
 
+
     const address =
         normalizeString(req.body.address);
+
 
     const latitude =
         req.body.latitude ?? null;
 
+
     const longitude =
         req.body.longitude ?? null;
+
 
     const externalUrl =
         normalizeString(req.body.external_url);
 
+
     console.log(
-    "schedule external_url:",
-    externalUrl
-);
+        "schedule external_url:",
+        externalUrl
+    );
+
 
     const priority =
         normalizeString(req.body.priority) ||
         "normal";
 
 
+    const status =
+        normalizeString(req.body.status) ||
+        "planned";
+
+
     const result = db.prepare(`
-    INSERT INTO schedules (
-        trip_id,
-        title,
-        start_at,
-        end_at,
-        type,
-        location_name,
-        address,
-        latitude,
-        longitude,
-        external_url,
-        description,
-        priority
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`).run(
+        INSERT INTO schedules (
+            trip_id,
+            title,
+            start_at,
+            end_at,
+            type,
+            location_name,
+            address,
+            latitude,
+            longitude,
+            external_url,
+            description,
+            priority,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
         tripId,
         title,
         startAt,
@@ -172,7 +184,8 @@ router.post("/trips/:id/schedules", (req, res) => {
         longitude,
         externalUrl,
         description,
-        priority
+        priority,
+        status
     );
 
 
@@ -250,6 +263,32 @@ router.put("/schedules/:id", (req, res) => {
         normalizeString(req.body.description);
 
 
+    const address =
+        normalizeString(req.body.address);
+
+
+    const latitude =
+        req.body.latitude ?? null;
+
+
+    const longitude =
+        req.body.longitude ?? null;
+
+
+    const externalUrl =
+        normalizeString(req.body.external_url);
+
+
+    const priority =
+        normalizeString(req.body.priority) ||
+        "normal";
+
+
+    const status =
+        normalizeString(req.body.status) ||
+        "planned";
+
+
     db.prepare(`
         UPDATE schedules
         SET
@@ -258,7 +297,13 @@ router.put("/schedules/:id", (req, res) => {
             end_at = ?,
             type = ?,
             location_name = ?,
+            address = ?,
+            latitude = ?,
+            longitude = ?,
+            external_url = ?,
             description = ?,
+            priority = ?,
+            status = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
     `).run(
@@ -267,7 +312,13 @@ router.put("/schedules/:id", (req, res) => {
         endAt,
         type,
         locationName,
+        address,
+        latitude,
+        longitude,
+        externalUrl,
         description,
+        priority,
+        status,
         id
     );
 
