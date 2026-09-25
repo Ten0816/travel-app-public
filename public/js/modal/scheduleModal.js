@@ -47,6 +47,9 @@ export function openScheduleModal(
     scheduleModal.dataset.scheduleId =
         "";
 
+    scheduleModal.dataset.sourceEventId =
+        "";
+
     scheduleModal.dataset.latitude =
         "";
 
@@ -93,6 +96,9 @@ export function openScheduleModal(
 
         scheduleStatusInput.value =
             initialData.status || "planned";
+
+        scheduleModal.dataset.sourceEventId =
+            initialData.source_event_id ?? "";
 
         scheduleModal.dataset.latitude =
             initialData.latitude ?? "";
@@ -171,6 +177,8 @@ export function openScheduleEditModal(
     scheduleStatusInput.value =
         schedule.status || "planned";
 
+    scheduleModal.dataset.sourceEventId =
+        "";
 
     scheduleModal.dataset.latitude =
         schedule.latitude ?? "";

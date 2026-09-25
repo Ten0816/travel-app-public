@@ -26,6 +26,8 @@ import {
     initializeTripModal
 } from "./modal/tripModal.js";
 
+import "./trip/schedule/schedule.js";
+
 
 /* ============================================================
    Initialization

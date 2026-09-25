@@ -76,72 +76,72 @@ export function renderEvents(events) {
 
                         ${event.location_name
                     ? `
-        <p class="event-location">
-            ${escapeHtml(
+                        <p class="event-location">
+                            ${escapeHtml(
                         event.location_name
                     )}
-        </p>
-    `
+                        </p>
+                        `
                     : ""
                 }
 
-${event.address
+                        ${event.address
                     ? `
-        <p class="event-address">
-            ${escapeHtml(
+                        <p class="event-address">
+                            ${escapeHtml(
                         event.address
                     )}
-        </p>
-    `
+                        </p>
+                        `
                     : ""
                 }
 
-${event.start_at
+                        ${event.start_at
                     ? `
-        <p class="event-time">
-            ${formatEventTime(
+                        <p class="event-time">
+                            ${formatEventTime(
                         event.start_at,
                         event.end_at
                     )}
-        </p>
-    `
+                        </p>
+                        `
                     : ""
                 }
 
-${event.external_url
+                        ${event.external_url
                     ? `
-        <p class="event-url">
-            <a
-                href="${escapeHtml(
+                        <p class="event-url">
+                            <a
+                                href="${escapeHtml(
                         event.external_url
                     )}"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                公式サイト・詳細を見る
-            </a>
-        </p>
-    `
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                公式サイト・詳細を見る
+                            </a>
+                        </p>
+                        `
                     : ""
                 }
 
-${event.priority === "high"
+                        ${event.priority === "high"
                     ? `
-        <p class="event-priority">
-            優先度：高
-        </p>
-    `
+                        <p class="event-priority">
+                            優先度：高
+                        </p>
+                        `
                     : ""
                 }
 
-${event.memo
+                        ${event.memo
                     ? `
-        <p class="event-description">
-            ${escapeHtml(
+                        <p class="event-description">
+                            ${escapeHtml(
                         event.memo
                     )}
-        </p>
-    `
+                        </p>
+                        `
                     : ""
                 }
 
@@ -149,31 +149,31 @@ ${event.memo
 
                     <div class="event-actions">
 
-    <button
-        type="button"
-        class="primary-button event-add-schedule-button"
-        data-event-id="${event.id}"
-    >
-        予定に追加
-    </button>
+                        <button
+                            type="button"
+                            class="primary-button event-add-schedule-button"
+                            data-event-id="${event.id}"
+                        >
+                            予定に追加
+                        </button>
 
-    <button
-        type="button"
-        class="secondary-button event-edit-button"
-        data-event-id="${event.id}"
-    >
-        編集
-    </button>
+                        <button
+                            type="button"
+                            class="secondary-button event-edit-button"
+                            data-event-id="${event.id}"
+                        >
+                            編集
+                        </button>
 
-    <button
-        type="button"
-        class="danger-button event-delete-button"
-        data-event-id="${event.id}"
-    >
-        削除
-    </button>
+                        <button
+                            type="button"
+                            class="danger-button event-delete-button"
+                            data-event-id="${event.id}"
+                        >
+                            削除
+                        </button>
 
-</div>
+                    </div>
 
                 </div>
 
@@ -182,6 +182,10 @@ ${event.memo
 
 }
 
+
+/* ============================================================
+   候補イベントカード操作
+   ============================================================ */
 
 eventList.addEventListener(
     "click",
@@ -202,6 +206,7 @@ eventList.addEventListener(
                 ".event-delete-button"
             );
 
+
         if (
             !addScheduleButton &&
             !editButton &&
@@ -210,23 +215,31 @@ eventList.addEventListener(
             return;
         }
 
+
         const button =
             addScheduleButton ||
             editButton ||
             deleteButton;
+
 
         const eventId =
             Number(
                 button.dataset.eventId
             );
 
+
         const trip =
             getCurrentTrip();
+
 
         if (!trip) {
             return;
         }
 
+
+        /* ========================================================
+           予定に追加
+           ======================================================== */
 
         if (addScheduleButton) {
 
@@ -237,17 +250,21 @@ eventList.addEventListener(
                         trip.id
                     );
 
+
                 const targetEvent =
                     events.find(
                         item =>
                             item.id === eventId
                     );
 
+
                 if (!targetEvent) {
                     return;
                 }
 
+
                 openScheduleModal({
+
                     title:
                         targetEvent.title,
 
@@ -279,7 +296,11 @@ eventList.addEventListener(
                         targetEvent.priority,
 
                     description:
-                        targetEvent.memo
+                        targetEvent.memo,
+
+                    source_event_id:
+                        targetEvent.id
+
                 });
 
             } catch (error) {
@@ -296,16 +317,19 @@ eventList.addEventListener(
         }
 
 
-        // ========================================================
-        // 編集
-        // ========================================================
+        /* ========================================================
+           編集
+           ======================================================== */
 
         if (editButton) {
 
             try {
 
                 const events =
-                    await getEvents(trip.id);
+                    await getEvents(
+                        trip.id
+                    );
+
 
                 const targetEvent =
                     events.find(
@@ -313,12 +337,15 @@ eventList.addEventListener(
                             item.id === eventId
                     );
 
+
                 if (!targetEvent) {
                     return;
                 }
 
+
                 editingEventId =
                     targetEvent.id;
+
 
                 openEventEditModal(
                     targetEvent
@@ -338,9 +365,9 @@ eventList.addEventListener(
         }
 
 
-        // ========================================================
-        // 削除確認
-        // ========================================================
+        /* ========================================================
+           削除確認
+           ======================================================== */
 
         if (deleteButton) {
 
@@ -349,15 +376,18 @@ eventList.addEventListener(
                     "この候補イベントを削除しますか？"
                 );
 
+
             if (!confirmed) {
                 return;
             }
+
 
             try {
 
                 await deleteEvent(
                     eventId
                 );
+
 
                 await reloadEvents();
 
@@ -371,6 +401,7 @@ eventList.addEventListener(
                 );
 
             }
+
         }
 
     }
@@ -385,12 +416,15 @@ function formatEventTime(
     startAt,
     endAt
 ) {
+
     if (!startAt) {
         return "";
     }
 
+
     const startDate =
         new Date(startAt);
+
 
     if (
         Number.isNaN(
@@ -399,6 +433,7 @@ function formatEventTime(
     ) {
         return "";
     }
+
 
     const startText =
         startDate.toLocaleString(
@@ -411,12 +446,15 @@ function formatEventTime(
             }
         );
 
+
     if (!endAt) {
         return startText;
     }
 
+
     const endDate =
         new Date(endAt);
+
 
     if (
         Number.isNaN(
@@ -425,6 +463,7 @@ function formatEventTime(
     ) {
         return startText;
     }
+
 
     const endText =
         endDate.toLocaleString(
@@ -437,7 +476,9 @@ function formatEventTime(
             }
         );
 
+
     return `${startText} ～ ${endText}`;
+
 }
 
 
@@ -450,18 +491,22 @@ export async function reloadEvents() {
     const currentTrip =
         getCurrentTrip();
 
+
     if (!currentTrip) {
         return;
     }
+
 
     const events =
         await getEvents(
             currentTrip.id
         );
 
+
     renderEvents(
         events
     );
+
 }
 
 
@@ -474,9 +519,11 @@ export async function loadEvents(
             tripId
         );
 
+
     renderEvents(
         events
     );
+
 }
 
 
@@ -491,6 +538,7 @@ createEventButton.addEventListener(
         editingEventId = null;
 
         openEventModal();
+
     }
 );
 
@@ -505,17 +553,21 @@ eventForm.addEventListener(
 
         event.preventDefault();
 
+
         const trip =
             getCurrentTrip();
+
 
         if (!trip) {
             return;
         }
 
+
         try {
 
             const data =
                 getEventFormData();
+
 
             if (editingEventId !== null) {
 
@@ -533,15 +585,19 @@ eventForm.addEventListener(
 
             }
 
+
             editingEventId = null;
 
+
             closeEventModal();
+
 
             await reloadEvents();
 
         } catch (error) {
 
             console.error(error);
+
 
             await showAlert(
                 error.message ||

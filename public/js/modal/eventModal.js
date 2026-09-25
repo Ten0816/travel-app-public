@@ -33,6 +33,13 @@ export function openEventModal() {
     eventForm.reset();
 
 
+    eventModal.dataset.latitude =
+        "";
+
+    eventModal.dataset.longitude =
+        "";
+
+
     eventModal.classList.remove(
         "hidden"
     );
@@ -76,6 +83,13 @@ export function openEventEditModal(event) {
 
     eventPriorityInput.value =
         event.priority || "normal";
+
+
+    eventModal.dataset.latitude =
+        event.latitude ?? "";
+
+    eventModal.dataset.longitude =
+        event.longitude ?? "";
 
 
     eventModal.classList.remove(
@@ -138,6 +152,12 @@ export function getEventFormData() {
 
         address:
             eventAddressInput.value.trim() || null,
+
+        latitude:
+            eventModal.dataset.latitude || null,
+
+        longitude:
+            eventModal.dataset.longitude || null,
 
         external_url:
             eventUrlInput.value.trim() || null,

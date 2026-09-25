@@ -132,6 +132,14 @@ export function renderSchedules(schedules) {
 
                         <button
                             type="button"
+                            class="secondary-button schedule-return-event-button"
+                            data-schedule-id="${schedule.id}"
+                        >
+                            候補に戻す
+                        </button>
+
+                        <button
+                            type="button"
                             class="secondary-button schedule-edit-button"
                             data-schedule-id="${schedule.id}"
                         >
