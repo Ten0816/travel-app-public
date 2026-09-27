@@ -23,9 +23,6 @@ export function renderSchedules(
     schedules
 ) {
 
-    /*
-     * 現在の予定情報を更新
-     */
     scheduleMap.clear();
 
 
@@ -53,15 +50,307 @@ export function renderSchedules(
     }
 
 
+    /*
+     * 日付ごとにグループ化
+     */
+    const groups =
+        groupSchedulesByDate(
+            schedules
+        );
+
+
     scheduleList.innerHTML =
-        schedules
+        groups
             .map(
-                schedule =>
-                    createScheduleCard(
-                        schedule
+                group =>
+                    createScheduleGroup(
+                        group
                     )
             )
             .join("");
+
+}
+
+
+/* ============================================================
+   日付ごとに予定をグループ化
+   ============================================================ */
+
+function groupSchedulesByDate(
+    schedules
+) {
+
+    const groupMap =
+        new Map();
+
+
+    schedules.forEach(
+        schedule => {
+
+            const dateKey =
+                getScheduleDateKey(
+                    schedule.start_at
+                );
+
+
+            if (
+                !groupMap.has(
+                    dateKey
+                )
+            ) {
+
+                groupMap.set(
+                    dateKey,
+                    []
+                );
+
+            }
+
+
+            groupMap
+                .get(dateKey)
+                .push(schedule);
+
+        }
+    );
+
+
+    const groups =
+        Array.from(
+            groupMap.entries()
+        )
+            .map(
+                ([dateKey, groupSchedules]) => {
+
+                    groupSchedules.sort(
+                        (
+                            a,
+                            b
+                        ) =>
+                            compareSortKeys(
+                                getScheduleSortKey(
+                                    a.start_at,
+                                    a.id
+                                ),
+                                getScheduleSortKey(
+                                    b.start_at,
+                                    b.id
+                                )
+                            )
+                    );
+
+
+                    return {
+                        dateKey,
+                        schedules:
+                            groupSchedules
+                    };
+
+                }
+            );
+
+
+    /*
+     * 日付順
+     *
+     * 日時未定は最後
+     */
+    groups.sort(
+        (a, b) => {
+
+            if (
+                a.dateKey ===
+                "unknown"
+            ) {
+
+                return 1;
+
+            }
+
+
+            if (
+                b.dateKey ===
+                "unknown"
+            ) {
+
+                return -1;
+
+            }
+
+
+            return a.dateKey
+                .localeCompare(
+                    b.dateKey
+                );
+
+        }
+    );
+
+
+    return groups;
+
+}
+
+
+/* ============================================================
+   予定の日付キー
+   ============================================================ */
+
+function getScheduleDateKey(
+    startAt
+) {
+
+    if (!startAt) {
+        return "unknown";
+    }
+
+
+    const date =
+        new Date(
+            startAt
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "unknown";
+
+    }
+
+
+    const year =
+        date.getFullYear();
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return `${year}-${month}-${day}`;
+
+}
+
+
+/* ============================================================
+   日付グループ生成
+   ============================================================ */
+
+function createScheduleGroup(
+    group
+) {
+
+    const title =
+        group.dateKey === "unknown"
+            ? "日時未定"
+            : formatScheduleDate(
+                group.dateKey
+            );
+
+
+    return `
+
+        <section
+            class="schedule-day-group"
+            data-date="${escapeHtml(
+                group.dateKey
+            )}"
+        >
+
+            <h3 class="schedule-day-title">
+
+                ${escapeHtml(
+                    title
+                )}
+
+            </h3>
+
+
+            <div class="schedule-day-list">
+
+                ${group.schedules
+                    .map(
+                        schedule =>
+                            createScheduleCard(
+                                schedule
+                            )
+                    )
+                    .join("")}
+
+            </div>
+
+        </section>
+
+    `;
+
+}
+
+
+/* ============================================================
+   日付表示
+   ============================================================ */
+
+function formatScheduleDate(
+    dateKey
+) {
+
+    const [
+        year,
+        month,
+        day
+    ] =
+        dateKey
+            .split("-")
+            .map(Number);
+
+
+    const date =
+        new Date(
+            year,
+            month - 1,
+            day
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return dateKey;
+
+    }
+
+
+    const weekday =
+        date.toLocaleDateString(
+            "ja-JP",
+            {
+                weekday: "short"
+            }
+        );
+
+
+    return `${month}月${day}日（${weekday.replace(
+        "曜日",
+        ""
+    )}）`;
 
 }
 
@@ -100,6 +389,30 @@ function createScheduleCard(
             : status === "cancelled"
                 ? "キャンセル"
                 : "予定中";
+
+
+    /*
+     * 実施状態切り替えボタン
+     *
+     * キャンセルの場合は表示しない。
+     * キャンセル解除は編集画面から行う。
+     */
+    const statusToggleButton =
+        status === "cancelled"
+            ? ""
+            : `
+                <button
+                    type="button"
+                    class="secondary-button schedule-status-toggle-button"
+                    data-schedule-id="${schedule.id}"
+                >
+                    ${
+                        status === "completed"
+                            ? "予定に戻す"
+                            : "実施済みにする"
+                    }
+                </button>
+            `;
 
 
     return `
@@ -216,6 +529,9 @@ function createScheduleCard(
 
             <div class="schedule-actions">
 
+                ${statusToggleButton}
+
+
                 <button
                     type="button"
                     class="secondary-button schedule-return-event-button"
@@ -259,9 +575,6 @@ export function addScheduleToList(
     schedule
 ) {
 
-    /*
-     * ローカル状態を更新
-     */
     scheduleMap.set(
         schedule.id,
         schedule
@@ -269,111 +582,55 @@ export function addScheduleToList(
 
 
     /*
-     * 空表示を削除
+     * 現在のローカル状態だけで再描画
+     *
+     * APIへの追加通信は発生しない
      */
-    const emptyMessage =
-        scheduleList.querySelector(
-            ".section-description"
-        );
+    renderSchedules(
+        Array.from(
+            scheduleMap.values()
+        )
+    );
+
+}
 
 
-    if (emptyMessage) {
-        emptyMessage.remove();
-    }
+/* ============================================================
+   予定を一覧から削除
+   ============================================================ */
+
+export function removeScheduleFromList(
+    scheduleId
+) {
+
+    scheduleMap.delete(
+        scheduleId
+    );
 
 
-    /*
-     * 同じ予定が存在する場合は置き換える
-     */
-    const existingCard =
-        scheduleList.querySelector(
-            `.schedule-card[data-schedule-id="${schedule.id}"]`
-        );
+    if (
+        scheduleMap.size === 0
+    ) {
 
-
-    if (existingCard) {
-
-        existingCard.outerHTML =
-            createScheduleCard(
-                schedule
-            );
+        scheduleList.innerHTML = `
+            <p class="section-description">
+                予定はまだありません。
+            </p>
+        `;
 
         return;
 
     }
 
 
-    const newCardHtml =
-        createScheduleCard(
-            schedule
-        );
-
-
-    const newSortKey =
-        getScheduleSortKey(
-            schedule.start_at,
-            schedule.id
-        );
-
-
-    const cards =
-        Array.from(
-            scheduleList.querySelectorAll(
-                ".schedule-card"
-            )
-        );
-
-
     /*
-     * 新しい予定より後ろに来る
-     * 最初のカードを探す
+     * 現在のローカル状態だけで再描画
      */
-    const insertBefore =
-        cards.find(
-            card => {
-
-                const cardStartAt =
-                    card.dataset.startAt ||
-                    null;
-
-
-                const cardId =
-                    Number(
-                        card.dataset.scheduleId
-                    );
-
-
-                const cardSortKey =
-                    getScheduleSortKey(
-                        cardStartAt,
-                        cardId
-                    );
-
-
-                return compareSortKeys(
-                    newSortKey,
-                    cardSortKey
-                ) < 0;
-
-            }
-        );
-
-
-    if (insertBefore) {
-
-        insertBefore.insertAdjacentHTML(
-            "beforebegin",
-            newCardHtml
-        );
-
-    } else {
-
-        scheduleList.insertAdjacentHTML(
-            "beforeend",
-            newCardHtml
-        );
-
-    }
+    renderSchedules(
+        Array.from(
+            scheduleMap.values()
+        )
+    );
 
 }
 
@@ -480,47 +737,6 @@ function compareSortKeys(
 
 
 /* ============================================================
-   予定を一覧から削除
-   ============================================================ */
-
-export function removeScheduleFromList(
-    scheduleId
-) {
-
-    scheduleMap.delete(
-        scheduleId
-    );
-
-
-    const card =
-        scheduleList.querySelector(
-            `.schedule-card[data-schedule-id="${scheduleId}"]`
-        );
-
-
-    if (card) {
-        card.remove();
-    }
-
-
-    if (
-        scheduleList.querySelector(
-            ".schedule-card"
-        ) === null
-    ) {
-
-        scheduleList.innerHTML = `
-            <p class="section-description">
-                予定はまだありません。
-            </p>
-        `;
-
-    }
-
-}
-
-
-/* ============================================================
    予定日時を表示
    ============================================================ */
 
@@ -551,12 +767,10 @@ function formatScheduleTime(
     }
 
 
-    const startText =
-        startDate.toLocaleString(
+    const startTimeText =
+        startDate.toLocaleTimeString(
             "ja-JP",
             {
-                month: "numeric",
-                day: "numeric",
                 hour: "2-digit",
                 minute: "2-digit"
             }
@@ -564,7 +778,7 @@ function formatScheduleTime(
 
 
     if (!endAt) {
-        return startText;
+        return startTimeText;
     }
 
 
@@ -580,19 +794,69 @@ function formatScheduleTime(
         )
     ) {
 
-        return startText;
+        return startTimeText;
 
     }
 
 
-    const endText =
-        endDate.toLocaleString(
+    const endTimeText =
+        endDate.toLocaleTimeString(
+            "ja-JP",
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+
+    /*
+     * 日付が同じ場合
+     *
+     * 例：
+     * 10:00 ～ 12:00
+     */
+    const sameDate =
+        startDate.getFullYear() ===
+            endDate.getFullYear() &&
+        startDate.getMonth() ===
+            endDate.getMonth() &&
+        startDate.getDate() ===
+            endDate.getDate();
+
+
+    if (sameDate) {
+
+        return `
+
+            <span class="schedule-time-start">
+                ${startTimeText}
+            </span>
+
+            <span class="schedule-time-separator">
+                ～
+            </span>
+
+            <span class="schedule-time-end">
+                ${endTimeText}
+            </span>
+
+        `;
+
+    }
+
+
+    /*
+     * 日付をまたぐ場合
+     *
+     * 例：
+     * 9月27日 22:00 ～ 9月28日 02:00
+     */
+    const endDateText =
+        endDate.toLocaleDateString(
             "ja-JP",
             {
                 month: "numeric",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
+                day: "numeric"
             }
         );
 
@@ -600,7 +864,7 @@ function formatScheduleTime(
     return `
 
         <span class="schedule-time-start">
-            ${startText}
+            ${startTimeText}
         </span>
 
         <span class="schedule-time-separator">
@@ -608,7 +872,7 @@ function formatScheduleTime(
         </span>
 
         <span class="schedule-time-end">
-            ${endText}
+            ${endDateText} ${endTimeText}
         </span>
 
     `;

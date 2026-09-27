@@ -1,4 +1,4 @@
- /* ============================================================
+/* ============================================================
    Mobile
    ============================================================ */
 
@@ -61,14 +61,30 @@
         font-size: 16px;
     }
 
+
+    /* ========================================================
+       Schedule Actions
+       ======================================================== */
+
     .schedule-actions {
-        justify-content: flex-end;
+        display: flex;
+
+        flex-wrap: wrap;
+
+        justify-content: flex-start;
+
+        gap: 8px;
+
+        width: 100%;
 
         margin-top: 4px;
     }
 
+
     .schedule-actions button {
-        flex: 0 0 auto;
+        flex: 1 1 auto;
+
+        min-width: 0;
     }
 
 }

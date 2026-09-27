@@ -5,7 +5,8 @@ import {
 import {
     getSchedules,
     deleteSchedule,
-    moveScheduleToEvent
+    moveScheduleToEvent,
+    updateScheduleStatus
 } from "../../api/schedules.js";
 
 import {
@@ -24,7 +25,8 @@ import {
 import {
     renderSchedules,
     getScheduleById,
-    removeScheduleFromList
+    removeScheduleFromList,
+    addScheduleToList
 } from "./scheduleRender.js";
 
 import {
@@ -93,6 +95,81 @@ export async function handleEditSchedule(
 
 
 /* ============================================================
+   予定の実施状態を切り替え
+   ============================================================ */
+
+export async function handleToggleScheduleStatus(
+    scheduleId
+) {
+
+    const schedule =
+        getScheduleById(
+            scheduleId
+        );
+
+
+    if (!schedule) {
+
+        await showAlert(
+            "予定が見つかりません。"
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * 実施済み → 予定中
+     * 予定中・キャンセル → 実施済み
+     *
+     * キャンセルはボタン自体を表示しないため、
+     * 基本的には planned / completed の切り替えになる。
+     */
+    const nextStatus =
+        schedule.status === "completed"
+            ? "planned"
+            : "completed";
+
+
+    try {
+
+        const updatedSchedule =
+            await updateScheduleStatus(
+                scheduleId,
+                nextStatus
+            );
+
+
+        /*
+         * API成功後、
+         * ローカルのMapを更新して再描画
+         *
+         * GETは発生しない
+         */
+        addScheduleToList(
+            updatedSchedule
+        );
+
+    } catch (error) {
+
+        console.error(
+            "handleToggleScheduleStatus error:",
+            error
+        );
+
+
+        await showAlert(
+            error.message ||
+            "予定の実施状態を変更できませんでした。"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
    予定削除
    ============================================================ */
 
@@ -146,7 +223,9 @@ export async function handleDeleteSchedule(
    予定を候補イベントに戻す
    ============================================================ */
 
-export async function handleMoveScheduleToEvent(scheduleId) {
+export async function handleMoveScheduleToEvent(
+    scheduleId
+) {
 
     const confirmed =
         await showConfirm(
@@ -174,7 +253,10 @@ export async function handleMoveScheduleToEvent(scheduleId) {
         );
 
 
-        if (!result || !result.event) {
+        if (
+            !result ||
+            !result.event
+        ) {
 
             throw new Error(
                 "候補イベントの作成結果を取得できませんでした。"
@@ -225,6 +307,36 @@ scheduleList.addEventListener(
     "click",
     event => {
 
+        /*
+         * 実施状態切り替え
+         */
+        const statusButton =
+            event.target.closest(
+                ".schedule-status-toggle-button"
+            );
+
+
+        if (statusButton) {
+
+            const scheduleId =
+                Number(
+                    statusButton.dataset.scheduleId
+                );
+
+
+            handleToggleScheduleStatus(
+                scheduleId
+            );
+
+
+            return;
+
+        }
+
+
+        /*
+         * 編集
+         */
         const editButton =
             event.target.closest(
                 ".schedule-edit-button"
@@ -249,6 +361,9 @@ scheduleList.addEventListener(
         }
 
 
+        /*
+         * 削除
+         */
         const deleteButton =
             event.target.closest(
                 ".schedule-delete-button"
@@ -273,6 +388,9 @@ scheduleList.addEventListener(
         }
 
 
+        /*
+         * 候補イベントに戻す
+         */
         const returnEventButton =
             event.target.closest(
                 ".schedule-return-event-button"

@@ -131,6 +131,62 @@ export async function updateSchedule(
 
 
 /* ============================================================
+   予定の実施状態を変更
+   ============================================================ */
+
+export async function updateScheduleStatus(
+    id,
+    status
+) {
+
+    const response =
+        await fetch(
+            `./api/schedules/${id}/status`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    status
+                })
+            }
+        );
+
+
+    if (!response.ok) {
+
+        let message =
+            "予定の実施状態を変更できませんでした。";
+
+
+        try {
+
+            const error =
+                await response.json();
+
+
+            message =
+                error.error ||
+                message;
+
+        } catch {
+        }
+
+
+        throw new Error(
+            message
+        );
+
+    }
+
+
+    return response.json();
+
+}
+
+
+/* ============================================================
    予定 → 候補イベント
    ============================================================ */
 

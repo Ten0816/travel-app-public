@@ -343,6 +343,92 @@ router.post("/trips/:id/schedules", (req, res) => {
 
 
 /* ============================================================
+   予定の実施状態を変更
+   ============================================================ */
+
+router.patch(
+    "/schedules/:id/status",
+    (req, res) => {
+
+        const id =
+            Number(req.params.id);
+
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+
+            return res.status(400).json({
+                error: "Invalid schedule id"
+            });
+
+        }
+
+
+        const existingSchedule =
+            db.prepare(`
+                SELECT *
+                FROM schedules
+                WHERE id = ?
+            `).get(id);
+
+
+        if (!existingSchedule) {
+
+            return res.status(404).json({
+                error: "Schedule not found"
+            });
+
+        }
+
+
+        const status =
+            normalizeString(
+                req.body.status
+            );
+
+
+        if (
+            status !== "planned" &&
+            status !== "completed" &&
+            status !== "cancelled"
+        ) {
+
+            return res.status(400).json({
+                error: "Invalid status"
+            });
+
+        }
+
+
+        db.prepare(`
+            UPDATE schedules
+            SET
+                status = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(
+            status,
+            id
+        );
+
+
+        const schedule =
+            db.prepare(`
+                SELECT *
+                FROM schedules
+                WHERE id = ?
+            `).get(id);
+
+
+        res.json(schedule);
+
+    }
+);
+
+
+/* ============================================================
    予定を更新
    ============================================================ */
 
