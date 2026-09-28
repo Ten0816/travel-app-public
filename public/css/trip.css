@@ -4,23 +4,16 @@
 
 .trip-list {
     display: flex;
-
     flex-direction: column;
-
     gap: 10px;
 }
 
 .trip-card {
     width: 100%;
-
     padding: 16px;
-
     border: 1px solid #ddd;
-
     border-radius: 10px;
-
     background: white;
-
     text-align: left;
 }
 
@@ -30,23 +23,18 @@
 
 .trip-card-name {
     margin: 0 0 6px;
-
     font-size: 18px;
 }
 
 .trip-card-date {
     margin: 0;
-
     color: #777;
-
     font-size: 14px;
 }
 
 .empty-message {
     padding: 30px 10px;
-
     text-align: center;
-
     color: #777;
 }
 
@@ -61,19 +49,14 @@
 
 .detail-row {
     display: grid;
-
     grid-template-columns: 100px 1fr;
-
     gap: 16px;
-
     padding: 16px 0;
-
     border-bottom: 1px solid #eee;
 }
 
 .detail-label {
     color: #777;
-
     font-size: 14px;
 }
 
@@ -92,20 +75,18 @@
 
 #schedule-list {
     display: flex;
-
     flex-direction: column;
-
     gap: 10px;
 }
 
 .schedule-card {
     display: grid;
 
-    grid-template-columns: 150px minmax(0, 1fr) auto;
+    grid-template-columns: 150px minmax(0, 1fr);
 
     gap: 16px;
 
-    align-items: center;
+    align-items: start;
 
     padding: 16px;
 
@@ -118,24 +99,19 @@
 
 .schedule-time {
     min-width: 0;
-
     color: #666;
-
     font-size: 14px;
-
     line-height: 1.5;
 }
 
 .schedule-time-start,
 .schedule-time-end {
     display: block;
-
     white-space: nowrap;
 }
 
 .schedule-time-separator {
     display: block;
-
     margin: 2px 0;
 }
 
@@ -145,45 +121,47 @@
 
 .schedule-title {
     margin: 0;
-
     font-size: 16px;
-
     font-weight: 600;
-
     overflow-wrap: anywhere;
 }
 
 .schedule-location {
     margin: 6px 0 0;
-
     color: #666;
-
     font-size: 14px;
-
     overflow-wrap: anywhere;
 }
 
 .schedule-description {
     margin: 6px 0 0;
-
     color: #777;
-
     font-size: 14px;
-
     line-height: 1.6;
-
     white-space: pre-line;
-
     overflow-wrap: anywhere;
 }
 
 .schedule-actions {
+    grid-column: 1 / -1;
+
     display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: flex-end;
 
     gap: 8px;
 
-    flex-shrink: 0;
+    width: 100%;
 }
+
+.schedule-actions button,
+.schedule-actions a {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 
 /* ============================================================
    Candidate Event
@@ -201,7 +179,7 @@
 
 .event-card {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
     padding: 16px;
     border: 1px solid #ddd;
@@ -229,19 +207,14 @@
 
 .event-address {
     margin: 6px 0 0;
-
     color: #666;
-
     font-size: 14px;
-
     overflow-wrap: anywhere;
 }
 
 .event-url {
     margin: 6px 0 0;
-
     font-size: 14px;
-
     overflow-wrap: anywhere;
 }
 
@@ -251,9 +224,7 @@
 
 .event-priority {
     margin: 6px 0 0;
-
     color: #666;
-
     font-size: 14px;
 }
 
@@ -274,29 +245,28 @@
 
 .event-actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 8px;
+    width: 100%;
 }
 
-.event-actions button {
+.event-actions button,
+.event-actions a {
     flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .schedule-address {
     margin: 6px 0 0;
-
     color: #666;
-
     font-size: 14px;
-
     overflow-wrap: anywhere;
 }
 
 .schedule-url {
     margin: 6px 0 0;
-
     font-size: 14px;
-
     overflow-wrap: anywhere;
 }
 

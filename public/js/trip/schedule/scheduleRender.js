@@ -268,15 +268,15 @@ function createScheduleGroup(
         <section
             class="schedule-day-group"
             data-date="${escapeHtml(
-                group.dateKey
-            )}"
+        group.dateKey
+    )}"
         >
 
             <h3 class="schedule-day-title">
 
                 ${escapeHtml(
-                    title
-                )}
+        title
+    )}
 
             </h3>
 
@@ -284,13 +284,13 @@ function createScheduleGroup(
             <div class="schedule-day-list">
 
                 ${group.schedules
-                    .map(
-                        schedule =>
-                            createScheduleCard(
-                                schedule
-                            )
+            .map(
+                schedule =>
+                    createScheduleCard(
+                        schedule
                     )
-                    .join("")}
+            )
+            .join("")}
 
             </div>
 
@@ -406,13 +406,29 @@ function createScheduleCard(
                     class="secondary-button schedule-status-toggle-button"
                     data-schedule-id="${schedule.id}"
                 >
-                    ${
-                        status === "completed"
-                            ? "予定に戻す"
-                            : "実施済みにする"
-                    }
+                    ${status === "completed"
+                ? "予定に戻す"
+                : "実施済みにする"
+            }
                 </button>
             `;
+
+
+    const googleMapsButton =
+        schedule.address
+            ? `
+            <a
+                href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                schedule.address
+            )}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="secondary-button"
+            >
+                Google Mapsで開く
+            </a>
+        `
+            : "";
 
 
     return `
@@ -421,16 +437,16 @@ function createScheduleCard(
             class="schedule-card"
             data-schedule-id="${schedule.id}"
             data-start-at="${escapeHtml(
-                schedule.start_at || ""
-            )}"
+        schedule.start_at || ""
+    )}"
         >
 
             <div class="schedule-time">
 
                 ${formatScheduleTime(
-                    schedule.start_at,
-                    schedule.end_at
-                )}
+        schedule.start_at,
+        schedule.end_at
+    )}
 
             </div>
 
@@ -440,8 +456,8 @@ function createScheduleCard(
                 <h4 class="schedule-title">
 
                     ${escapeHtml(
-                        schedule.title
-                    )}
+        schedule.title
+    )}
 
                 </h4>
 
@@ -454,41 +470,41 @@ function createScheduleCard(
 
 
                 ${schedule.location_name
-                    ? `
+            ? `
                 <p class="schedule-location">
 
                     ${escapeHtml(
-                        schedule.location_name
-                    )}
+                schedule.location_name
+            )}
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${schedule.address
-                    ? `
+            ? `
                 <p class="schedule-address">
 
                     ${escapeHtml(
-                        schedule.address
-                    )}
+                schedule.address
+            )}
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${schedule.external_url
-                    ? `
+            ? `
                 <p class="schedule-url">
 
                     <a
                         href="${escapeHtml(
-                            schedule.external_url
-                        )}"
+                schedule.external_url
+            )}"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
@@ -497,32 +513,32 @@ function createScheduleCard(
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${schedule.priority === "high"
-                    ? `
+            ? `
                 <p class="schedule-priority">
                     優先度：高
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${schedule.description
-                    ? `
+            ? `
                 <p class="schedule-description">
 
                     ${escapeHtml(
-                        schedule.description
-                    )}
+                schedule.description
+            )}
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
             </div>
 
@@ -530,6 +546,8 @@ function createScheduleCard(
             <div class="schedule-actions">
 
                 ${statusToggleButton}
+
+                ${googleMapsButton}
 
 
                 <button
@@ -817,11 +835,11 @@ function formatScheduleTime(
      */
     const sameDate =
         startDate.getFullYear() ===
-            endDate.getFullYear() &&
+        endDate.getFullYear() &&
         startDate.getMonth() ===
-            endDate.getMonth() &&
+        endDate.getMonth() &&
         startDate.getDate() ===
-            endDate.getDate();
+        endDate.getDate();
 
 
     if (sameDate) {

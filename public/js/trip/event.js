@@ -113,8 +113,8 @@ function createEventCard(
             data-event-id="${event.id}"
             data-visited="${event.visited ? "1" : "0"}"
             data-start-at="${escapeHtml(
-                event.start_at || ""
-            )}"
+        event.start_at || ""
+    )}"
         >
 
             <div class="event-content">
@@ -122,63 +122,63 @@ function createEventCard(
                 <h4 class="event-title">
 
                     ${escapeHtml(
-                        event.title
-                    )}
+        event.title
+    )}
 
                 </h4>
 
 
                 ${event.location_name
-                    ? `
+            ? `
                 <p class="event-location">
 
                     ${escapeHtml(
-                        event.location_name
-                    )}
+                event.location_name
+            )}
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${event.address
-                    ? `
+            ? `
                 <p class="event-address">
 
                     ${escapeHtml(
-                        event.address
-                    )}
+                event.address
+            )}
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${event.start_at
-                    ? `
+            ? `
                 <p class="event-time">
 
                     ${formatEventTime(
-                        event.start_at,
-                        event.end_at
-                    )}
+                event.start_at,
+                event.end_at
+            )}
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${event.external_url
-                    ? `
+            ? `
                 <p class="event-url">
 
                     <a
                         href="${escapeHtml(
-                            event.external_url
-                        )}"
+                event.external_url
+            )}"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
@@ -187,65 +187,79 @@ function createEventCard(
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${event.priority === "high"
-                    ? `
+            ? `
                 <p class="event-priority">
                     優先度：高
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
 
                 ${event.memo
-                    ? `
+            ? `
                 <p class="event-description">
 
                     ${escapeHtml(
-                        event.memo
-                    )}
+                event.memo
+            )}
 
                 </p>
                 `
-                    : ""
-                }
+            : ""
+        }
 
             </div>
 
 
             <div class="event-actions">
 
-                <button
-                    type="button"
-                    class="primary-button event-add-schedule-button"
-                    data-event-id="${event.id}"
-                >
-                    予定に追加
-                </button>
+    ${event.address
+            ? `
+        <a
+            href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                event.address
+            )}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="secondary-button"
+        >
+            Google Mapsで開く
+        </a>
+        `
+            : ""
+        }
 
+    <button
+        type="button"
+        class="primary-button event-add-schedule-button"
+        data-event-id="${event.id}"
+    >
+        予定に追加
+    </button>
 
-                <button
-                    type="button"
-                    class="secondary-button event-edit-button"
-                    data-event-id="${event.id}"
-                >
-                    編集
-                </button>
+    <button
+        type="button"
+        class="secondary-button event-edit-button"
+        data-event-id="${event.id}"
+    >
+        編集
+    </button>
 
+    <button
+        type="button"
+        class="danger-button event-delete-button"
+        data-event-id="${event.id}"
+    >
+        削除
+    </button>
 
-                <button
-                    type="button"
-                    class="danger-button event-delete-button"
-                    data-event-id="${event.id}"
-                >
-                    削除
-                </button>
-
-            </div>
+</div>
 
         </div>
 

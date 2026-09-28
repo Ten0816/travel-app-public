@@ -375,12 +375,12 @@ router.post(
         const startAt =
             normalizeString(
                 req.body.start_at
-            ) || event.start_at;
+            );
 
         const endAt =
             normalizeString(
                 req.body.end_at
-            ) || event.end_at;
+            );
 
 
         const locationName =
@@ -559,12 +559,12 @@ router.put(
         const startAt =
             normalizeString(
                 req.body.start_at
-            ) || event.start_at;
+            ) || existingEvent.start_at;
 
         const endAt =
             normalizeString(
                 req.body.end_at
-            ) || event.end_at;
+            ) || existingEvent.end_at;
 
 
         const locationName =

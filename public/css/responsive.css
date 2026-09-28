@@ -81,10 +81,12 @@
     }
 
 
-    .schedule-actions button {
-        flex: 1 1 auto;
+    .schedule-actions button,
+    .schedule-actions a {
+        flex: 0 1 auto;
 
         min-width: 0;
-    }
 
+        white-space: nowrap;
+    }
 }
