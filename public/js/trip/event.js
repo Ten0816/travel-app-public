@@ -886,26 +886,27 @@ eventForm.addEventListener(
                     );
 
 
-                eventMap.set(
-                    updatedEvent.id,
-                    updatedEvent
-                );
-
-
-                const card =
+                /*
+                 * 古いカードを削除
+                 */
+                const oldCard =
                     eventList.querySelector(
                         `.event-card[data-event-id="${updatedEvent.id}"]`
                     );
 
 
-                if (card) {
-
-                    card.outerHTML =
-                        createEventCard(
-                            updatedEvent
-                        );
-
+                if (oldCard) {
+                    oldCard.remove();
                 }
+
+
+                /*
+                 * 最新データを
+                 * 正しい位置へ再挿入
+                 */
+                addEventToList(
+                    updatedEvent
+                );
 
             } else {
 
