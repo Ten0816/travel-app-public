@@ -126,8 +126,43 @@ function groupSchedulesByDate(
                         (
                             a,
                             b
-                        ) =>
-                            compareSortKeys(
+                        ) => {
+
+                            /*
+                             * sort_order を最優先
+                             */
+                            const aOrder =
+                                Number.isInteger(
+                                    a.sort_order
+                                )
+                                    ? a.sort_order
+                                    : Number.MAX_SAFE_INTEGER;
+
+
+                            const bOrder =
+                                Number.isInteger(
+                                    b.sort_order
+                                )
+                                    ? b.sort_order
+                                    : Number.MAX_SAFE_INTEGER;
+
+
+                            if (
+                                aOrder !==
+                                bOrder
+                            ) {
+
+                                return aOrder -
+                                    bOrder;
+
+                            }
+
+
+                            /*
+                             * sort_order が同じ場合は
+                             * 時刻順
+                             */
+                            return compareSortKeys(
                                 getScheduleSortKey(
                                     a.start_at,
                                     a.id
@@ -136,7 +171,9 @@ function groupSchedulesByDate(
                                     b.start_at,
                                     b.id
                                 )
-                            )
+                            );
+
+                        }
                     );
 
 
@@ -371,6 +408,19 @@ export function getScheduleById(
 
 
 /* ============================================================
+   現在の予定一覧を取得
+   ============================================================ */
+
+export function getSchedulesFromList() {
+
+    return Array.from(
+        scheduleMap.values()
+    );
+
+}
+
+
+/* ============================================================
    予定カード生成
    ============================================================ */
 
@@ -544,6 +594,28 @@ function createScheduleCard(
 
 
             <div class="schedule-actions">
+
+    <button
+        type="button"
+        class="secondary-button schedule-move-up-button"
+        data-schedule-id="${schedule.id}"
+        aria-label="上へ移動"
+    >
+        ↑
+    </button>
+
+    <button
+        type="button"
+        class="secondary-button schedule-move-down-button"
+        data-schedule-id="${schedule.id}"
+        aria-label="下へ移動"
+    >
+        ↓
+    </button>
+
+    ${statusToggleButton}
+
+    ${googleMapsButton}
 
                 ${statusToggleButton}
 

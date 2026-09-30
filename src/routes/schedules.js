@@ -46,13 +46,14 @@ router.get("/trips/:id/schedules", (req, res) => {
         FROM schedules
         WHERE trip_id = ?
         ORDER BY
-            sort_order ASC,
-            CASE
-                WHEN start_at IS NULL OR start_at = '' THEN 1
-                ELSE 0
-            END,
-            start_at ASC,
-            id ASC
+    CASE
+        WHEN start_at IS NULL OR start_at = '' THEN 1
+        ELSE 0
+    END,
+    substr(start_at, 1, 10) ASC,
+    sort_order ASC,
+    start_at ASC,
+    id ASC
     `).all(tripId);
 
 
@@ -410,6 +411,86 @@ router.patch(
             WHERE id = ?
         `).run(
             status,
+            id
+        );
+
+
+        const schedule =
+            db.prepare(`
+                SELECT *
+                FROM schedules
+                WHERE id = ?
+            `).get(id);
+
+
+        res.json(schedule);
+
+    }
+);
+
+
+/* ============================================================
+   予定の並び順を変更
+   ============================================================ */
+
+router.patch(
+    "/schedules/:id/order",
+    (req, res) => {
+
+        const id =
+            Number(req.params.id);
+
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+
+            return res.status(400).json({
+                error: "Invalid schedule id"
+            });
+
+        }
+
+
+        const sortOrder =
+            Number(req.body.sort_order);
+
+
+        if (!Number.isInteger(sortOrder)) {
+
+            return res.status(400).json({
+                error: "Invalid sort order"
+            });
+
+        }
+
+
+        const existingSchedule =
+            db.prepare(`
+                SELECT *
+                FROM schedules
+                WHERE id = ?
+            `).get(id);
+
+
+        if (!existingSchedule) {
+
+            return res.status(404).json({
+                error: "Schedule not found"
+            });
+
+        }
+
+
+        db.prepare(`
+            UPDATE schedules
+            SET
+                sort_order = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(
+            sortOrder,
             id
         );
 

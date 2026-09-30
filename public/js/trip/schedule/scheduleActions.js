@@ -6,7 +6,8 @@ import {
     getSchedules,
     deleteSchedule,
     moveScheduleToEvent,
-    updateScheduleStatus
+    updateScheduleStatus,
+    updateScheduleOrder
 } from "../../api/schedules.js";
 
 import {
@@ -25,6 +26,7 @@ import {
 import {
     renderSchedules,
     getScheduleById,
+    getSchedulesFromList,
     removeScheduleFromList,
     addScheduleToList
 } from "./scheduleRender.js";
@@ -90,6 +92,278 @@ export async function handleEditSchedule(
     openScheduleEditModal(
         schedule
     );
+
+}
+
+
+/* ============================================================
+   予定の並び順を変更
+   ============================================================ */
+
+export async function handleMoveSchedule(
+    scheduleId,
+    direction
+) {
+
+    const schedule =
+        getScheduleById(
+            scheduleId
+        );
+
+
+    if (!schedule) {
+
+        await showAlert(
+            "予定が見つかりません。"
+        );
+
+        return;
+
+    }
+
+
+    const schedules =
+        getSchedulesFromList();
+
+
+    /*
+     * 現在の予定と同じ日付の予定だけを取得
+     */
+    const currentDate =
+        getScheduleDateKey(
+            schedule.start_at
+        );
+
+
+    const sameDaySchedules =
+        schedules
+            .filter(
+                item =>
+                    getScheduleDateKey(
+                        item.start_at
+                    ) === currentDate
+            )
+            .sort(
+                (
+                    a,
+                    b
+                ) => {
+
+                    const aOrder =
+                        Number.isInteger(
+                            a.sort_order
+                        )
+                            ? a.sort_order
+                            : Number.MAX_SAFE_INTEGER;
+
+
+                    const bOrder =
+                        Number.isInteger(
+                            b.sort_order
+                        )
+                            ? b.sort_order
+                            : Number.MAX_SAFE_INTEGER;
+
+
+                    if (
+                        aOrder !==
+                        bOrder
+                    ) {
+
+                        return aOrder -
+                            bOrder;
+
+                    }
+
+
+                    return (
+                        new Date(
+                            a.start_at || 0
+                        ).getTime()
+                    ) -
+                    (
+                        new Date(
+                            b.start_at || 0
+                        ).getTime()
+                    );
+
+                }
+            );
+
+
+    const currentIndex =
+        sameDaySchedules.findIndex(
+            item =>
+                item.id ===
+                scheduleId
+        );
+
+
+    if (
+        currentIndex === -1
+    ) {
+        return;
+    }
+
+
+    const targetIndex =
+        direction === "up"
+            ? currentIndex - 1
+            : currentIndex + 1;
+
+
+    /*
+     * 先頭・末尾
+     */
+    if (
+        targetIndex < 0 ||
+        targetIndex >=
+            sameDaySchedules.length
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * 配列上で入れ替える
+     */
+    const reordered =
+        [
+            ...sameDaySchedules
+        ];
+
+
+    const temp =
+        reordered[currentIndex];
+
+
+    reordered[currentIndex] =
+        reordered[targetIndex];
+
+
+    reordered[targetIndex] =
+        temp;
+
+
+    /*
+     * 同じ日付グループの
+     * sort_order を振り直す
+     */
+    reordered.forEach(
+        (
+            item,
+            index
+        ) => {
+
+            item.sort_order =
+                index;
+
+        }
+    );
+
+
+    try {
+
+        /*
+         * DBへ保存
+         */
+        await Promise.all(
+            reordered.map(
+                item =>
+                    updateScheduleOrder(
+                        item.id,
+                        item.sort_order
+                    )
+            )
+        );
+
+
+        /*
+         * 保存成功後に再描画
+         */
+        renderSchedules(
+            getSchedulesFromList()
+        );
+
+    } catch (error) {
+
+        console.error(
+            "handleMoveSchedule error:",
+            error
+        );
+
+
+        /*
+         * DB保存に失敗した場合は
+         * サーバー側の状態を再取得
+         */
+        await reloadSchedules();
+
+
+        await showAlert(
+            error.message ||
+            "予定の並び順を変更できませんでした。"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   予定の日付キー
+   ============================================================ */
+
+function getScheduleDateKey(
+    startAt
+) {
+
+    if (!startAt) {
+        return "unknown";
+    }
+
+
+    const date =
+        new Date(
+            startAt
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "unknown";
+    }
+
+
+    const year =
+        date.getFullYear();
+
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return `${year}-${month}-${day}`;
 
 }
 
@@ -306,6 +580,61 @@ export async function handleMoveScheduleToEvent(
 scheduleList.addEventListener(
     "click",
     event => {
+
+                /*
+         * 並び順を上へ
+         */
+        const moveUpButton =
+            event.target.closest(
+                ".schedule-move-up-button"
+            );
+
+
+        if (moveUpButton) {
+
+            const scheduleId =
+                Number(
+                    moveUpButton.dataset.scheduleId
+                );
+
+
+            handleMoveSchedule(
+                scheduleId,
+                "up"
+            );
+
+
+            return;
+
+        }
+
+
+        /*
+         * 並び順を下へ
+         */
+        const moveDownButton =
+            event.target.closest(
+                ".schedule-move-down-button"
+            );
+
+
+        if (moveDownButton) {
+
+            const scheduleId =
+                Number(
+                    moveDownButton.dataset.scheduleId
+                );
+
+
+            handleMoveSchedule(
+                scheduleId,
+                "down"
+            );
+
+
+            return;
+
+        }
 
         /*
          * 実施状態切り替え
