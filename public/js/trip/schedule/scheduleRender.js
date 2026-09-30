@@ -613,10 +613,6 @@ function createScheduleCard(
         ↓
     </button>
 
-    ${statusToggleButton}
-
-    ${googleMapsButton}
-
                 ${statusToggleButton}
 
                 ${googleMapsButton}

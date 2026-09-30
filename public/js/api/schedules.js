@@ -187,25 +187,23 @@ export async function updateScheduleStatus(
 
 
 /* ============================================================
-   予定の並び順を変更
+   予定の並び順を一括変更
    ============================================================ */
 
-export async function updateScheduleOrder(
-    scheduleId,
-    sortOrder
+export async function updateScheduleOrders(
+    orders
 ) {
 
     const response =
         await fetch(
-            `./api/schedules/${scheduleId}/order`,
+            "./api/schedules/order",
             {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    sort_order:
-                        sortOrder
+                    orders
                 })
             }
         );
@@ -216,19 +214,24 @@ export async function updateScheduleOrder(
         let message =
             "予定の並び順を変更できませんでした。";
 
+
         try {
 
             const data =
                 await response.json();
 
+
             if (data.error) {
+
                 message =
                     data.error;
+
             }
 
         } catch {
             // JSONでない場合はデフォルトメッセージ
         }
+
 
         throw new Error(
             message

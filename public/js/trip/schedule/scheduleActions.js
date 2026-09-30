@@ -6,8 +6,7 @@ import {
     getSchedules,
     deleteSchedule,
     moveScheduleToEvent,
-    updateScheduleStatus,
-    updateScheduleOrder
+    updateScheduleStatus
 } from "../../api/schedules.js";
 
 import {
@@ -30,6 +29,10 @@ import {
     removeScheduleFromList,
     addScheduleToList
 } from "./scheduleRender.js";
+
+import {
+    moveSchedule
+} from "./scheduleOrder.js";
 
 import {
     addEventToList
@@ -105,179 +108,21 @@ export async function handleMoveSchedule(
     direction
 ) {
 
-    const schedule =
-        getScheduleById(
-            scheduleId
-        );
+    try {
 
-
-    if (!schedule) {
-
-        await showAlert(
-            "予定が見つかりません。"
-        );
-
-        return;
-
-    }
-
-
-    const schedules =
-        getSchedulesFromList();
-
-
-    /*
-     * 現在の予定と同じ日付の予定だけを取得
-     */
-    const currentDate =
-        getScheduleDateKey(
-            schedule.start_at
-        );
-
-
-    const sameDaySchedules =
-        schedules
-            .filter(
-                item =>
-                    getScheduleDateKey(
-                        item.start_at
-                    ) === currentDate
-            )
-            .sort(
-                (
-                    a,
-                    b
-                ) => {
-
-                    const aOrder =
-                        Number.isInteger(
-                            a.sort_order
-                        )
-                            ? a.sort_order
-                            : Number.MAX_SAFE_INTEGER;
-
-
-                    const bOrder =
-                        Number.isInteger(
-                            b.sort_order
-                        )
-                            ? b.sort_order
-                            : Number.MAX_SAFE_INTEGER;
-
-
-                    if (
-                        aOrder !==
-                        bOrder
-                    ) {
-
-                        return aOrder -
-                            bOrder;
-
-                    }
-
-
-                    return (
-                        new Date(
-                            a.start_at || 0
-                        ).getTime()
-                    ) -
-                    (
-                        new Date(
-                            b.start_at || 0
-                        ).getTime()
-                    );
-
-                }
+        const moved =
+            await moveSchedule(
+                scheduleId,
+                direction
             );
 
 
-    const currentIndex =
-        sameDaySchedules.findIndex(
-            item =>
-                item.id ===
-                scheduleId
-        );
-
-
-    if (
-        currentIndex === -1
-    ) {
-        return;
-    }
-
-
-    const targetIndex =
-        direction === "up"
-            ? currentIndex - 1
-            : currentIndex + 1;
-
-
-    /*
-     * 先頭・末尾
-     */
-    if (
-        targetIndex < 0 ||
-        targetIndex >=
-            sameDaySchedules.length
-    ) {
-
-        return;
-
-    }
-
-
-    /*
-     * 配列上で入れ替える
-     */
-    const reordered =
-        [
-            ...sameDaySchedules
-        ];
-
-
-    const temp =
-        reordered[currentIndex];
-
-
-    reordered[currentIndex] =
-        reordered[targetIndex];
-
-
-    reordered[targetIndex] =
-        temp;
-
-
-    /*
-     * 同じ日付グループの
-     * sort_order を振り直す
-     */
-    reordered.forEach(
-        (
-            item,
-            index
-        ) => {
-
-            item.sort_order =
-                index;
-
-        }
-    );
-
-
-    try {
-
         /*
-         * DBへ保存
+         * 先頭・末尾の場合
          */
-        await Promise.all(
-            reordered.map(
-                item =>
-                    updateScheduleOrder(
-                        item.id,
-                        item.sort_order
-                    )
-            )
-        );
+        if (!moved) {
+            return;
+        }
 
 
         /*
@@ -313,62 +158,6 @@ export async function handleMoveSchedule(
 
 
 /* ============================================================
-   予定の日付キー
-   ============================================================ */
-
-function getScheduleDateKey(
-    startAt
-) {
-
-    if (!startAt) {
-        return "unknown";
-    }
-
-
-    const date =
-        new Date(
-            startAt
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "unknown";
-    }
-
-
-    const year =
-        date.getFullYear();
-
-
-    const month =
-        String(
-            date.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    const day =
-        String(
-            date.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    return `${year}-${month}-${day}`;
-
-}
-
-
-/* ============================================================
    予定の実施状態を切り替え
    ============================================================ */
 
@@ -398,7 +187,7 @@ export async function handleToggleScheduleStatus(
      * 予定中・キャンセル → 実施済み
      *
      * キャンセルはボタン自体を表示しないため、
-     * 基本的には planned / completed の切り替えになる。
+     * 基本的にはplanned / completedの切り替えになる。
      */
     const nextStatus =
         schedule.status === "completed"
@@ -554,7 +343,6 @@ export async function handleMoveScheduleToEvent(
             scheduleId
         );
 
-
     } catch (error) {
 
         console.error(
@@ -581,7 +369,7 @@ scheduleList.addEventListener(
     "click",
     event => {
 
-                /*
+        /*
          * 並び順を上へ
          */
         const moveUpButton =
@@ -635,6 +423,7 @@ scheduleList.addEventListener(
             return;
 
         }
+
 
         /*
          * 実施状態切り替え

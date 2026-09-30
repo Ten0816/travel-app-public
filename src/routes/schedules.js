@@ -430,80 +430,188 @@ router.patch(
 
 
 /* ============================================================
-   予定の並び順を変更
+   予定の並び順を一括変更
    ============================================================ */
 
 router.patch(
-    "/schedules/:id/order",
+    "/schedules/order",
     (req, res) => {
 
-        const id =
-            Number(req.params.id);
+        const orders =
+            req.body.orders;
 
 
+        /*
+         * 配列であることを確認
+         */
         if (
-            !Number.isInteger(id) ||
-            id <= 0
+            !Array.isArray(orders) ||
+            orders.length === 0
         ) {
 
             return res.status(400).json({
-                error: "Invalid schedule id"
+                error: "Invalid orders"
             });
 
         }
 
 
-        const sortOrder =
-            Number(req.body.sort_order);
+        /*
+         * 各要素を検証
+         */
+        for (const order of orders) {
+
+            if (
+                !order ||
+                !Number.isInteger(
+                    Number(order.id)
+                ) ||
+                Number(order.id) <= 0 ||
+                !Number.isInteger(
+                    Number(order.sort_order)
+                ) ||
+                Number(order.sort_order) < 0
+            ) {
+
+                return res.status(400).json({
+                    error: "Invalid schedule order"
+                });
+
+            }
+
+        }
 
 
-        if (!Number.isInteger(sortOrder)) {
+        /*
+         * IDの重複を確認
+         */
+        const ids =
+            orders.map(
+                order =>
+                    Number(order.id)
+            );
+
+
+        const uniqueIds =
+            new Set(
+                ids
+            );
+
+
+        if (
+            uniqueIds.size !==
+            ids.length
+        ) {
 
             return res.status(400).json({
-                error: "Invalid sort order"
+                error: "Duplicate schedule id"
             });
 
         }
 
 
-        const existingSchedule =
-            db.prepare(`
-                SELECT *
-                FROM schedules
-                WHERE id = ?
-            `).get(id);
+        try {
+
+            const updateOrders =
+                db.transaction(() => {
+
+                    const update =
+                        db.prepare(`
+                            UPDATE schedules
+                            SET
+                                sort_order = ?,
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE id = ?
+                        `);
 
 
-        if (!existingSchedule) {
+                    for (
+                        const order of orders
+                    ) {
 
-            return res.status(404).json({
-                error: "Schedule not found"
+                        const result =
+                            update.run(
+                                Number(
+                                    order.sort_order
+                                ),
+                                Number(
+                                    order.id
+                                )
+                            );
+
+
+                        /*
+                         * 存在しない予定IDが
+                         * 含まれていた場合は
+                         * トランザクション全体を失敗させる
+                         */
+                        if (
+                            result.changes === 0
+                        ) {
+
+                            throw new Error(
+                                "Schedule not found"
+                            );
+
+                        }
+
+                    }
+
+
+                    /*
+                     * 更新後の予定を取得
+                     */
+                    const placeholders =
+                        ids
+                            .map(
+                                () => "?"
+                            )
+                            .join(",");
+
+
+                    return db.prepare(`
+                        SELECT *
+                        FROM schedules
+                        WHERE id IN (${placeholders})
+                    `).all(
+                        ...ids
+                    );
+
+                })();
+
+
+            res.json({
+                schedules:
+                    updateOrders
+            });
+
+        } catch (error) {
+
+            console.error(
+                "schedule order update error:",
+                error
+            );
+
+
+            if (
+                error.message ===
+                "Schedule not found"
+            ) {
+
+                return res.status(404).json({
+                    error:
+                        "Schedule not found"
+                });
+
+            }
+
+
+            res.status(500).json({
+                error:
+                    "予定の並び順を変更できませんでした。"
             });
 
         }
-
-
-        db.prepare(`
-            UPDATE schedules
-            SET
-                sort_order = ?,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(
-            sortOrder,
-            id
-        );
-
-
-        const schedule =
-            db.prepare(`
-                SELECT *
-                FROM schedules
-                WHERE id = ?
-            `).get(id);
-
-
-        res.json(schedule);
 
     }
 );
@@ -519,128 +627,396 @@ router.put("/schedules/:id", (req, res) => {
         Number(req.params.id);
 
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (
+        !Number.isInteger(id) ||
+        id <= 0
+    ) {
+
         return res.status(400).json({
             error: "Invalid schedule id"
         });
+
     }
 
 
-    const existingSchedule = db.prepare(`
-        SELECT *
-        FROM schedules
-        WHERE id = ?
-    `).get(id);
+    const existingSchedule =
+        db.prepare(`
+            SELECT *
+            FROM schedules
+            WHERE id = ?
+        `).get(id);
 
 
     if (!existingSchedule) {
+
         return res.status(404).json({
             error: "Schedule not found"
         });
+
     }
 
 
     const title =
-        normalizeString(req.body.title);
+        normalizeString(
+            req.body.title
+        );
 
 
     if (!title) {
+
         return res.status(400).json({
             error: "予定名は必須です"
         });
+
     }
 
 
     const startAt =
-        normalizeString(req.body.start_at);
+        normalizeString(
+            req.body.start_at
+        );
 
 
     const endAt =
-        normalizeString(req.body.end_at);
+        normalizeString(
+            req.body.end_at
+        );
 
 
     const type =
-        normalizeString(req.body.type) ||
+        normalizeString(
+            req.body.type
+        ) ||
         "other";
 
 
     const locationName =
-        normalizeString(req.body.location_name);
+        normalizeString(
+            req.body.location_name
+        );
 
 
     const description =
-        normalizeString(req.body.description);
+        normalizeString(
+            req.body.description
+        );
 
 
     const address =
-        normalizeString(req.body.address);
+        normalizeString(
+            req.body.address
+        );
 
 
     const latitude =
-        req.body.latitude ?? null;
+        req.body.latitude ??
+        null;
 
 
     const longitude =
-        req.body.longitude ?? null;
+        req.body.longitude ??
+        null;
 
 
     const externalUrl =
-        normalizeString(req.body.external_url);
+        normalizeString(
+            req.body.external_url
+        );
 
 
     const priority =
-        normalizeString(req.body.priority) ||
+        normalizeString(
+            req.body.priority
+        ) ||
         "normal";
 
 
     const status =
-        normalizeString(req.body.status) ||
+        normalizeString(
+            req.body.status
+        ) ||
         "planned";
 
 
-    db.prepare(`
-        UPDATE schedules
-        SET
-            title = ?,
-            start_at = ?,
-            end_at = ?,
-            type = ?,
-            location_name = ?,
-            address = ?,
-            latitude = ?,
-            longitude = ?,
-            external_url = ?,
-            description = ?,
-            priority = ?,
-            status = ?,
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-    `).run(
-        title,
-        startAt,
-        endAt,
-        type,
-        locationName,
-        address,
-        latitude,
-        longitude,
-        externalUrl,
-        description,
-        priority,
-        status,
-        id
-    );
+    /*
+     * 元の予定の日付
+     */
+    const oldDate =
+        getScheduleDateKey(
+            existingSchedule.start_at
+        );
 
 
-    const schedule = db.prepare(`
-        SELECT *
-        FROM schedules
-        WHERE id = ?
-    `).get(id);
+    /*
+     * 更新後の予定の日付
+     */
+    const newDate =
+        getScheduleDateKey(
+            startAt
+        );
 
 
-    res.json(schedule);
+    /*
+     * 日付が変わったか
+     */
+    const dateChanged =
+        oldDate !== newDate;
+
+
+    try {
+
+        const updatedSchedule =
+            db.transaction(() => {
+
+                /*
+                 * 日付が変わる場合
+                 *
+                 * 元の日付から予定を外すため、
+                 * まず通常のUPDATEを行う。
+                 */
+                db.prepare(`
+                    UPDATE schedules
+                    SET
+                        title = ?,
+                        start_at = ?,
+                        end_at = ?,
+                        type = ?,
+                        location_name = ?,
+                        address = ?,
+                        latitude = ?,
+                        longitude = ?,
+                        external_url = ?,
+                        description = ?,
+                        priority = ?,
+                        status = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                `).run(
+                    title,
+                    startAt,
+                    endAt,
+                    type,
+                    locationName,
+                    address,
+                    latitude,
+                    longitude,
+                    externalUrl,
+                    description,
+                    priority,
+                    status,
+                    id
+                );
+
+
+                /*
+                 * 日付が変わった場合
+                 */
+                if (dateChanged) {
+
+                    /*
+                     * 移動先の日付にある予定数を取得
+                     *
+                     * 現在更新した予定自身は
+                     * まだ元のsort_orderを持っているため、
+                     * 移動先の予定数だけ取得する。
+                     */
+                    const lastSchedule =
+                        db.prepare(`
+                            SELECT sort_order
+                            FROM schedules
+                            WHERE
+                                trip_id = ?
+                                AND id != ?
+                                AND (
+                                    CASE
+                                        WHEN start_at IS NULL
+                                            OR start_at = ''
+                                        THEN 'unknown'
+                                        ELSE substr(start_at, 1, 10)
+                                    END
+                                ) = ?
+                            ORDER BY
+                                sort_order DESC,
+                                start_at DESC,
+                                id DESC
+                            LIMIT 1
+                        `).get(
+                            existingSchedule.trip_id,
+                            id,
+                            newDate
+                        );
+
+
+                    const newSortOrder =
+                        lastSchedule
+                            ? Number(
+                                lastSchedule.sort_order
+                            ) + 1
+                            : 0;
+
+
+                    /*
+                     * 移動先の日付の末尾へ
+                     */
+                    db.prepare(`
+                        UPDATE schedules
+                        SET
+                            sort_order = ?,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                    `).run(
+                        newSortOrder,
+                        id
+                    );
+
+
+                    /*
+                     * 元の日付側のsort_orderを詰め直す
+                     */
+                    const oldDateSchedules =
+                        db.prepare(`
+                            SELECT id
+                            FROM schedules
+                            WHERE
+                                trip_id = ?
+                                AND id != ?
+                                AND (
+                                    CASE
+                                        WHEN start_at IS NULL
+                                            OR start_at = ''
+                                        THEN 'unknown'
+                                        ELSE substr(start_at, 1, 10)
+                                    END
+                                ) = ?
+                            ORDER BY
+                                sort_order ASC,
+                                start_at ASC,
+                                id ASC
+                        `).all(
+                            existingSchedule.trip_id,
+                            id,
+                            oldDate
+                        );
+
+
+                    const updateSortOrder =
+                        db.prepare(`
+                            UPDATE schedules
+                            SET
+                                sort_order = ?,
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE id = ?
+                        `);
+
+
+                    oldDateSchedules.forEach(
+                        (
+                            schedule,
+                            index
+                        ) => {
+
+                            updateSortOrder.run(
+                                index,
+                                schedule.id
+                            );
+
+                        }
+                    );
+
+                }
+
+
+                /*
+                 * 更新後の最新データを取得
+                 */
+                return db.prepare(`
+                    SELECT *
+                    FROM schedules
+                    WHERE id = ?
+                `).get(id);
+
+            })();
+
+
+        res.json(
+            updatedSchedule
+        );
+
+    } catch (error) {
+
+        console.error(
+            "schedule update error:",
+            error
+        );
+
+
+        res.status(500).json({
+            error:
+                "予定を更新できませんでした。"
+        });
+
+    }
+
 });
+
+
+/* ============================================================
+   予定の日付キー
+   ============================================================ */
+
+function getScheduleDateKey(
+    startAt
+) {
+
+    if (!startAt) {
+
+        return "unknown";
+
+    }
+
+
+    const date =
+        new Date(
+            startAt
+        );
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "unknown";
+
+    }
+
+
+    const year =
+        date.getFullYear();
+
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return `${year}-${month}-${day}`;
+
+}
 
 
 /* ============================================================
