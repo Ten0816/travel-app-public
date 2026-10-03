@@ -6,6 +6,10 @@ import {
     escapeHtml
 } from "../../utils/html.js";
 
+import {
+    renderScheduleCalendar
+} from "../scheduleCalendar.js";
+
 
 /* ============================================================
    現在表示している予定
@@ -19,56 +23,44 @@ const scheduleMap =
    予定一覧を表示
    ============================================================ */
 
-export function renderSchedules(
-    schedules
-) {
+export function renderSchedules(schedules) {
 
     scheduleMap.clear();
 
-
     schedules.forEach(
-        schedule => {
-
+        schedule =>
             scheduleMap.set(
                 schedule.id,
                 schedule
-            );
+            )
+    );
 
-        }
+
+    renderScheduleCalendar(
+        schedules
     );
 
 
     if (schedules.length === 0) {
 
-        scheduleList.innerHTML = `
-            <p class="section-description">
+        scheduleList.innerHTML =
+            `<p class="section-description">
                 予定はまだありません。
-            </p>
-        `;
+            </p>`;
 
         return;
     }
 
 
-    /*
-     * 日付ごとにグループ化
-     */
     const groups =
         groupSchedulesByDate(
             schedules
         );
 
-
     scheduleList.innerHTML =
         groups
-            .map(
-                group =>
-                    createScheduleGroup(
-                        group
-                    )
-            )
+            .map(createScheduleGroup)
             .join("");
-
 }
 
 

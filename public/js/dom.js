@@ -64,6 +64,12 @@ export const scheduleList =
 export const createScheduleButton =
     document.getElementById("create-schedule-button");
 
+export const scheduleCalendar =
+
+    document.getElementById(
+        "schedule-calendar"
+    );
+
 export const createEventButton =
     document.getElementById(
         "create-event-button"
