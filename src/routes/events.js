@@ -206,6 +206,27 @@ router.post(
                     : "planned";
 
 
+        /*
+ * 予定の時間重複チェック
+ */
+        const overlappingSchedule =
+            findOverlappingSchedule(
+                event.trip_id,
+                startAt,
+                endAt
+            );
+
+
+        if (overlappingSchedule) {
+
+            return res.status(409).json({
+                error:
+                    `「${overlappingSchedule.title}」と時間が重複しています。`
+            });
+
+        }
+
+
         try {
 
             const move =
@@ -772,6 +793,53 @@ router.delete(
 
     }
 );
+
+
+/* ============================================================
+   予定の時間重複チェック
+   ============================================================ */
+
+function findOverlappingSchedule(
+    tripId,
+    startAt,
+    endAt
+) {
+
+    /*
+     * 開始・終了のどちらかがない場合は
+     * 時間帯を判定できないため対象外
+     */
+    if (!startAt || !endAt) {
+        return null;
+    }
+
+
+    const overlappingSchedule =
+        db.prepare(`
+            SELECT *
+            FROM schedules
+            WHERE
+                trip_id = ?
+                AND start_at IS NOT NULL
+                AND start_at != ''
+                AND end_at IS NOT NULL
+                AND end_at != ''
+                AND start_at < ?
+                AND end_at > ?
+            ORDER BY
+                start_at ASC,
+                id ASC
+            LIMIT 1
+        `).get(
+            tripId,
+            endAt,
+            startAt
+        );
+
+
+    return overlappingSchedule || null;
+
+}
 
 
 module.exports = router;

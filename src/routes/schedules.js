@@ -298,6 +298,27 @@ router.post("/trips/:id/schedules", (req, res) => {
         "planned";
 
 
+    /*
+ * 時間重複チェック
+ */
+    const overlappingSchedule =
+        findOverlappingSchedule(
+            tripId,
+            startAt,
+            endAt
+        );
+
+
+    if (overlappingSchedule) {
+
+        return res.status(409).json({
+            error:
+                `「${overlappingSchedule.title}」と時間が重複しています。`
+        });
+
+    }
+
+
     const result = db.prepare(`
         INSERT INTO schedules (
             trip_id,
@@ -739,6 +760,30 @@ router.put("/schedules/:id", (req, res) => {
 
 
     /*
+ * 時間重複チェック
+ *
+ * 自分自身は除外する
+ */
+    const overlappingSchedule =
+        findOverlappingSchedule(
+            existingSchedule.trip_id,
+            startAt,
+            endAt,
+            id
+        );
+
+
+    if (overlappingSchedule) {
+
+        return res.status(409).json({
+            error:
+                `「${overlappingSchedule.title}」と時間が重複しています。`
+        });
+
+    }
+
+
+    /*
      * 元の予定の日付
      */
     const oldDate =
@@ -958,6 +1003,60 @@ router.put("/schedules/:id", (req, res) => {
     }
 
 });
+
+
+/* ============================================================
+   予定の時間重複チェック
+   ============================================================ */
+
+function findOverlappingSchedule(
+    tripId,
+    startAt,
+    endAt,
+    excludeId = null
+) {
+
+    /*
+     * 開始・終了のどちらかがない場合は
+     * 時間帯を判定できないため対象外
+     */
+    if (!startAt || !endAt) {
+        return null;
+    }
+
+
+    const overlappingSchedule =
+        db.prepare(`
+            SELECT *
+            FROM schedules
+            WHERE
+                trip_id = ?
+                AND start_at IS NOT NULL
+                AND start_at != ''
+                AND end_at IS NOT NULL
+                AND end_at != ''
+                AND start_at < ?
+                AND end_at > ?
+                AND (
+                    ? IS NULL
+                    OR id != ?
+                )
+            ORDER BY
+                start_at ASC,
+                id ASC
+            LIMIT 1
+        `).get(
+            tripId,
+            endAt,
+            startAt,
+            excludeId,
+            excludeId
+        );
+
+
+    return overlappingSchedule || null;
+
+}
 
 
 /* ============================================================
