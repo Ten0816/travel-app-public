@@ -28,6 +28,8 @@ import {
 
 import "./trip/schedule/schedule.js";
 
+import "./trip/scheduleSwipe.js";
+
 
 /* ============================================================
    Initialization
