@@ -7,6 +7,10 @@ import {
     updateScheduleOrders
 } from "../../api/schedules.js";
 
+import {
+    getDateKey
+} from "../../utils/date.js";
+
 
 /* ============================================================
    予定を上下に移動
@@ -40,17 +44,19 @@ export async function moveSchedule(
      * 現在の予定と同じ日付の予定だけを取得
      */
     const currentDate =
-        getScheduleDateKey(
+        getDateKey(
             schedule.start_at
-        );
+        ) || "unknown";
 
 
     const sameDaySchedules =
         schedules
             .filter(
                 item =>
-                    getScheduleDateKey(
-                        item.start_at
+                    (
+                        getDateKey(
+                            item.start_at
+                        ) || "unknown"
                     ) === currentDate
             )
             .sort(
@@ -207,24 +213,40 @@ function compareScheduleOrder(
      * 開始時刻順
      */
     const aTime =
-        getScheduleTime(
-            a.start_at
-        );
+        a.start_at
+            ? new Date(
+                a.start_at
+            ).getTime()
+            : Number.MAX_SAFE_INTEGER;
 
 
     const bTime =
-        getScheduleTime(
-            b.start_at
-        );
+        b.start_at
+            ? new Date(
+                b.start_at
+            ).getTime()
+            : Number.MAX_SAFE_INTEGER;
+
+
+    const normalizedATime =
+        Number.isNaN(aTime)
+            ? Number.MAX_SAFE_INTEGER
+            : aTime;
+
+
+    const normalizedBTime =
+        Number.isNaN(bTime)
+            ? Number.MAX_SAFE_INTEGER
+            : bTime;
 
 
     if (
-        aTime !==
-        bTime
+        normalizedATime !==
+        normalizedBTime
     ) {
 
-        return aTime -
-            bTime;
+        return normalizedATime -
+            normalizedBTime;
 
     }
 
@@ -234,101 +256,5 @@ function compareScheduleOrder(
      */
     return a.id -
         b.id;
-
-}
-
-
-/* ============================================================
-   予定の日付キーを取得
-   ============================================================ */
-
-function getScheduleDateKey(
-    startAt
-) {
-
-    if (!startAt) {
-
-        return "unknown";
-
-    }
-
-
-    const date =
-        new Date(
-            startAt
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "unknown";
-
-    }
-
-
-    const year =
-        date.getFullYear();
-
-
-    const month =
-        String(
-            date.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    const day =
-        String(
-            date.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    return `${year}-${month}-${day}`;
-
-}
-
-
-/* ============================================================
-   予定の開始時刻を比較用の数値にする
-   ============================================================ */
-
-function getScheduleTime(
-    startAt
-) {
-
-    if (!startAt) {
-
-        return Number.MAX_SAFE_INTEGER;
-
-    }
-
-
-    const time =
-        new Date(
-            startAt
-        ).getTime();
-
-
-    if (
-        Number.isNaN(
-            time
-        )
-    ) {
-
-        return Number.MAX_SAFE_INTEGER;
-
-    }
-
-
-    return time;
 
 }

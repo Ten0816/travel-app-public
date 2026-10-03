@@ -6,6 +6,14 @@ const {
     normalizeString
 } = require("../utils/normalize");
 
+const {
+    findOverlappingSchedule
+} = require("../utils/schedule");
+
+const {
+    parsePositiveInteger
+} = require("../utils/validation");
+
 
 const router =
     express.Router();
@@ -20,18 +28,15 @@ router.get(
     (req, res) => {
 
         const tripId =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(tripId) ||
-            tripId <= 0
-        ) {
-
+        if (tripId === null) {
             return res.status(400).json({
                 error: "Invalid trip id"
             });
-
         }
 
 
@@ -84,13 +89,12 @@ router.post(
     (req, res) => {
 
         const eventId =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(eventId) ||
-            eventId <= 0
-        ) {
+        if (eventId === null) {
 
             return res.status(400).json({
                 error: "Invalid event id"
@@ -207,8 +211,9 @@ router.post(
 
 
         /*
- * 予定の時間重複チェック
- */
+         * 予定の時間重複チェック
+         */
+
         const overlappingSchedule =
             findOverlappingSchedule(
                 event.trip_id,
@@ -235,6 +240,7 @@ router.post(
                     /*
                      * 予定を作成
                      */
+
                     const result =
                         db.prepare(`
                             INSERT INTO schedules (
@@ -287,6 +293,7 @@ router.post(
                     /*
                      * 作成した予定を取得
                      */
+
                     const schedule =
                         db.prepare(`
                             SELECT *
@@ -300,6 +307,7 @@ router.post(
                     /*
                      * 元の候補イベントを削除
                      */
+
                     db.prepare(`
                         DELETE FROM events
                         WHERE id = ?
@@ -340,13 +348,12 @@ router.post(
     (req, res) => {
 
         const tripId =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(tripId) ||
-            tripId <= 0
-        ) {
+        if (tripId === null) {
 
             return res.status(400).json({
                 error: "Invalid trip id"
@@ -397,6 +404,7 @@ router.post(
             normalizeString(
                 req.body.start_at
             );
+
 
         const endAt =
             normalizeString(
@@ -524,13 +532,12 @@ router.put(
     (req, res) => {
 
         const id =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(id) ||
-            id <= 0
-        ) {
+        if (id === null) {
 
             return res.status(400).json({
                 error: "Invalid event id"
@@ -581,6 +588,7 @@ router.put(
             normalizeString(
                 req.body.start_at
             ) || existingEvent.start_at;
+
 
         const endAt =
             normalizeString(
@@ -683,13 +691,12 @@ router.patch(
     (req, res) => {
 
         const id =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(id) ||
-            id <= 0
-        ) {
+        if (id === null) {
 
             return res.status(400).json({
                 error: "Invalid event id"
@@ -756,13 +763,12 @@ router.delete(
     (req, res) => {
 
         const id =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(id) ||
-            id <= 0
-        ) {
+        if (id === null) {
 
             return res.status(400).json({
                 error: "Invalid event id"
@@ -793,53 +799,6 @@ router.delete(
 
     }
 );
-
-
-/* ============================================================
-   予定の時間重複チェック
-   ============================================================ */
-
-function findOverlappingSchedule(
-    tripId,
-    startAt,
-    endAt
-) {
-
-    /*
-     * 開始・終了のどちらかがない場合は
-     * 時間帯を判定できないため対象外
-     */
-    if (!startAt || !endAt) {
-        return null;
-    }
-
-
-    const overlappingSchedule =
-        db.prepare(`
-            SELECT *
-            FROM schedules
-            WHERE
-                trip_id = ?
-                AND start_at IS NOT NULL
-                AND start_at != ''
-                AND end_at IS NOT NULL
-                AND end_at != ''
-                AND start_at < ?
-                AND end_at > ?
-            ORDER BY
-                start_at ASC,
-                id ASC
-            LIMIT 1
-        `).get(
-            tripId,
-            endAt,
-            startAt
-        );
-
-
-    return overlappingSchedule || null;
-
-}
 
 
 module.exports = router;

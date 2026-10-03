@@ -1,221 +1,113 @@
-export async function getEvents(tripId) {
-
-    const response =
-        await fetch(
-            `./api/trips/${tripId}/events`
-        );
+import { apiRequest } from "./client.js";
 
 
-    if (!response.ok) {
-        throw new Error(
-            "候補イベントを取得できませんでした。"
-        );
-    }
+/* ============================================================
+   候補イベント一覧取得
+   ============================================================ */
 
+export function getEvents(tripId) {
 
-    return response.json();
+    return apiRequest(
+        `/trips/${tripId}/events`,
+        {},
+        "候補イベントを取得できませんでした。"
+    );
 }
 
 
-export async function createEvent(tripId, data) {
+/* ============================================================
+   候補イベント作成
+   ============================================================ */
 
-    const response =
-        await fetch(
-            `./api/trips/${tripId}/events`,
-            {
-                method: "POST",
+export function createEvent(tripId, data) {
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(data)
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "候補イベントの作成に失敗しました。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-            message =
-                error.error || message;
-
-        } catch {
-        }
-
-
-        throw new Error(message);
-    }
-
-
-    return response.json();
+    return apiRequest(
+        `/trips/${tripId}/events`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        },
+        "候補イベントの作成に失敗しました。"
+    );
 }
 
 
-export async function updateEvent(id, data) {
+/* ============================================================
+   候補イベント更新
+   ============================================================ */
 
-    const response =
-        await fetch(
-            `./api/events/${id}`,
-            {
-                method: "PUT",
+export function updateEvent(id, data) {
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(data)
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "候補イベントの更新に失敗しました。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-            message =
-                error.error || message;
-
-        } catch {
-        }
-
-
-        throw new Error(message);
-    }
-
-
-    return response.json();
+    return apiRequest(
+        `/events/${id}`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        },
+        "候補イベントの更新に失敗しました。"
+    );
 }
 
 
-export async function updateEventVisited(
-    id,
-    visited
-) {
-    const response =
-        await fetch(
-            `./api/events/${id}/visited`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    visited
-                })
-            }
-        );
+/* ============================================================
+   訪問済み状態変更
+   ============================================================ */
 
-    if (!response.ok) {
-        let message =
-            "訪問済み状態の変更に失敗しました。";
+export function updateEventVisited(id, visited) {
 
-        try {
-            const error =
-                await response.json();
-
-            message =
-                error.error || message;
-
-        } catch {}
-
-        throw new Error(message);
-    }
-
-    return response.json();
+    return apiRequest(
+        `/events/${id}/visited`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                visited
+            })
+        },
+        "訪問済み状態の変更に失敗しました。"
+    );
 }
 
 
-export async function deleteEvent(id) {
+/* ============================================================
+   候補イベント削除
+   ============================================================ */
 
-    const response =
-        await fetch(
-            `./api/events/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
+export function deleteEvent(id) {
 
-
-    if (!response.ok) {
-
-        let message =
-            "候補イベントの削除に失敗しました。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-            message =
-                error.error || message;
-
-        } catch {
-        }
-
-
-        throw new Error(message);
-    }
+    return apiRequest(
+        `/events/${id}`,
+        {
+            method: "DELETE"
+        },
+        "候補イベントの削除に失敗しました。"
+    );
 }
 
 
-export async function moveEventToSchedule(
-    id,
-    data
-) {
+/* ============================================================
+   候補イベント → 予定
+   ============================================================ */
 
-    const response =
-        await fetch(
-            `./api/events/${id}/move-to-schedule`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            }
-        );
+export function moveEventToSchedule(id, data) {
 
-
-    if (!response.ok) {
-
-        let message =
-            "候補イベントを予定に移動できませんでした。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-            message =
-                error.error || message;
-
-        } catch {
-        }
-
-
-        throw new Error(message);
-
-    }
-
-
-    return response.json();
-
+    return apiRequest(
+        `/events/${id}/move-to-schedule`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        },
+        "候補イベントを予定に移動できませんでした。"
+    );
 }

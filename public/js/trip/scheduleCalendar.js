@@ -1,10 +1,15 @@
-import {
-    scheduleCalendar
-} from "../dom.js";
+import { scheduleCalendar } from "../dom.js";
+import { openScheduleEditModal } from "../modal/scheduleModal.js";
 
 import {
-    openScheduleEditModal
-} from "../modal/scheduleModal.js";
+    getDateKey,
+    formatTime,
+    parseDateKey
+} from "../utils/date.js";
+
+import {
+    escapeHtml
+} from "../utils/html.js";
 
 
 // ============================================================
@@ -34,10 +39,15 @@ export function renderScheduleCalendar(schedules) {
         return;
     }
 
+
     const datedSchedules =
         currentSchedules.filter(
-            schedule => getDateKey(schedule.start_at)
+            schedule =>
+                getDateKey(
+                    schedule.start_at
+                )
         );
+
 
     if (datedSchedules.length === 0) {
 
@@ -57,7 +67,10 @@ export function renderScheduleCalendar(schedules) {
         Array.from(
             new Set(
                 datedSchedules.map(
-                    schedule => getDateKey(schedule.start_at)
+                    schedule =>
+                        getDateKey(
+                            schedule.start_at
+                        )
                 )
             )
         ).sort();
@@ -65,13 +78,20 @@ export function renderScheduleCalendar(schedules) {
 
     if (
         !currentDateKey ||
-        !dateKeys.includes(currentDateKey)
+        !dateKeys.includes(
+            currentDateKey
+        )
     ) {
-        currentDateKey = dateKeys[0];
+
+        currentDateKey =
+            dateKeys[0];
+
     }
 
 
-    renderCalendar(dateKeys);
+    renderCalendar(
+        dateKeys
+    );
 }
 
 
@@ -79,12 +99,16 @@ export function renderScheduleCalendar(schedules) {
 // カレンダー全体
 // ============================================================
 
-function renderCalendar(dateKeys) {
+function renderCalendar(
+    dateKeys
+) {
 
     const schedules =
         currentSchedules.filter(
             schedule =>
-                getDateKey(schedule.start_at) === currentDateKey
+                getDateKey(
+                    schedule.start_at
+                ) === currentDateKey
         );
 
 
@@ -93,23 +117,39 @@ function renderCalendar(dateKeys) {
         <div class="schedule-calendar-header">
 
             <div class="schedule-calendar-title">
-                ${formatCalendarDate(currentDateKey)}
+                ${formatCalendarDate(
+                    currentDateKey
+                )}
             </div>
 
             <div class="schedule-calendar-date-list">
 
-                ${dateKeys.map(dateKey => `
+                ${dateKeys
+                    .map(
+                        dateKey => `
 
-                    <button
-                        type="button"
-                        class="schedule-calendar-date-button
-                            ${dateKey === currentDateKey ? "active" : ""}"
-                        data-calendar-date="${dateKey}"
-                    >
-                        ${formatCalendarDateShort(dateKey)}
-                    </button>
+                            <button
+                                type="button"
+                                class="schedule-calendar-date-button
+                                    ${
+                                        dateKey ===
+                                        currentDateKey
+                                            ? "active"
+                                            : ""
+                                    }"
+                                data-calendar-date="${escapeHtml(
+                                    dateKey
+                                )}"
+                            >
+                                ${formatCalendarDateShort(
+                                    dateKey
+                                )}
+                            </button>
 
-                `).join("")}
+                        `
+                    )
+                    .join("")
+                }
 
             </div>
 
@@ -132,8 +172,13 @@ function renderCalendar(dateKeys) {
                 <div class="schedule-calendar-events">
 
                     ${schedules
-                        .filter(schedule => schedule.start_at)
-                        .map(createCalendarEvent)
+                        .filter(
+                            schedule =>
+                                schedule.start_at
+                        )
+                        .map(
+                            createCalendarEvent
+                        )
                         .join("")
                     }
 
@@ -157,6 +202,7 @@ function createHourLabels() {
 
     const labels = [];
 
+
     for (
         let hour = CALENDAR_START_HOUR;
         hour < CALENDAR_END_HOUR;
@@ -168,10 +214,17 @@ function createHourLabels() {
                 class="schedule-calendar-hour-label"
                 style="height:${HOUR_HEIGHT}px"
             >
-                ${String(hour).padStart(2, "0")}:00
+                ${String(
+                    hour
+                ).padStart(
+                    2,
+                    "0"
+                )}:00
             </div>
         `);
+
     }
+
 
     return labels.join("");
 }
@@ -185,6 +238,7 @@ function createHourLines() {
 
     const lines = [];
 
+
     for (
         let hour = CALENDAR_START_HOUR;
         hour <= CALENDAR_END_HOUR;
@@ -192,8 +246,12 @@ function createHourLines() {
     ) {
 
         const top =
-            (hour - CALENDAR_START_HOUR) *
+            (
+                hour -
+                CALENDAR_START_HOUR
+            ) *
             HOUR_HEIGHT;
+
 
         lines.push(`
             <div
@@ -201,7 +259,9 @@ function createHourLines() {
                 style="top:${top}px"
             ></div>
         `);
+
     }
+
 
     return lines.join("");
 }
@@ -211,17 +271,24 @@ function createHourLines() {
 // カレンダー予定
 // ============================================================
 
-function createCalendarEvent(schedule) {
+function createCalendarEvent(
+    schedule
+) {
 
     const startDate =
-        new Date(schedule.start_at);
+        new Date(
+            schedule.start_at
+        );
+
 
     if (
         Number.isNaN(
             startDate.getTime()
         )
     ) {
+
         return "";
+
     }
 
 
@@ -237,7 +304,10 @@ function createCalendarEvent(schedule) {
     if (schedule.end_at) {
 
         const endDate =
-            new Date(schedule.end_at);
+            new Date(
+                schedule.end_at
+            );
+
 
         if (
             !Number.isNaN(
@@ -246,8 +316,13 @@ function createCalendarEvent(schedule) {
         ) {
 
             const sameDate =
-                getDateKey(schedule.start_at) ===
-                getDateKey(schedule.end_at);
+                getDateKey(
+                    schedule.start_at
+                ) ===
+                getDateKey(
+                    schedule.end_at
+                );
+
 
             if (sameDate) {
 
@@ -257,24 +332,33 @@ function createCalendarEvent(schedule) {
 
             } else {
 
-                endMinutes = 24 * 60;
+                endMinutes =
+                    24 * 60;
 
             }
+
         }
+
     }
 
 
     startMinutes =
         Math.max(
             0,
-            Math.min(24 * 60, startMinutes)
+            Math.min(
+                24 * 60,
+                startMinutes
+            )
         );
 
 
     endMinutes =
         Math.max(
             startMinutes + 30,
-            Math.min(24 * 60, endMinutes)
+            Math.min(
+                24 * 60,
+                endMinutes
+            )
         );
 
 
@@ -286,13 +370,17 @@ function createCalendarEvent(schedule) {
     const height =
         Math.max(
             30,
-            (endMinutes - startMinutes) *
+            (
+                endMinutes -
+                startMinutes
+            ) *
             (HOUR_HEIGHT / 60)
         );
 
 
     const status =
-        schedule.status || "planned";
+        schedule.status ||
+        "planned";
 
 
     return `
@@ -301,7 +389,9 @@ function createCalendarEvent(schedule) {
             type="button"
             class="
                 schedule-calendar-event
-                schedule-calendar-event-${escapeAttribute(status)}
+                schedule-calendar-event-${escapeAttribute(
+                    status
+                )}
             "
             data-schedule-id="${schedule.id}"
             style="
@@ -311,28 +401,47 @@ function createCalendarEvent(schedule) {
         >
 
             <span class="schedule-calendar-event-time">
-                ${formatTime(schedule.start_at)}
-                ${schedule.end_at
-                    ? `～${formatTime(schedule.end_at)}`
-                    : ""
+
+                ${formatTime(
+                    schedule.start_at
+                )}
+
+                ${
+                    schedule.end_at
+                        ? `～${formatTime(
+                            schedule.end_at
+                        )}`
+                        : ""
                 }
+
             </span>
 
+
             <span class="schedule-calendar-event-title">
-                ${escapeHtml(schedule.title)}
+
+                ${escapeHtml(
+                    schedule.title
+                )}
+
             </span>
+
 
             ${
                 schedule.location_name
                     ? `
                         <span class="schedule-calendar-event-location">
-                            ${escapeHtml(schedule.location_name)}
+
+                            ${escapeHtml(
+                                schedule.location_name
+                            )}
+
                         </span>
                     `
                     : ""
             }
 
         </button>
+
     `;
 }
 
@@ -347,61 +456,75 @@ function bindCalendarEvents() {
         .querySelectorAll(
             "[data-calendar-date]"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    currentDateKey =
-                        button.dataset.calendarDate;
+                        currentDateKey =
+                            button.dataset.calendarDate;
 
-                    const dateKeys =
-                        Array.from(
-                            new Set(
-                                currentSchedules
-                                    .filter(
-                                        schedule =>
-                                            getDateKey(
-                                                schedule.start_at
-                                            )
-                                    )
-                                    .map(
-                                        schedule =>
-                                            getDateKey(
-                                                schedule.start_at
-                                            )
-                                    )
-                            )
-                        ).sort();
 
-                    renderCalendar(dateKeys);
-                }
-            );
-        });
+                        const dateKeys =
+                            Array.from(
+                                new Set(
+                                    currentSchedules
+                                        .filter(
+                                            schedule =>
+                                                getDateKey(
+                                                    schedule.start_at
+                                                )
+                                        )
+                                        .map(
+                                            schedule =>
+                                                getDateKey(
+                                                    schedule.start_at
+                                                )
+                                        )
+                                )
+                            ).sort();
+
+
+                        renderCalendar(
+                            dateKeys
+                        );
+
+                    }
+                );
+
+            }
+        );
 
 
     scheduleCalendar
         .querySelectorAll(
             ".schedule-calendar-event"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    const scheduleId =
-                        Number(
-                            button.dataset.scheduleId
+                        const scheduleId =
+                            Number(
+                                button.dataset.scheduleId
+                            );
+
+
+                        openExistingSchedule(
+                            scheduleId
                         );
 
-                    openExistingSchedule(
-                        scheduleId
-                    );
-                }
-            );
-        });
+                    }
+                );
+
+            }
+        );
+
 }
 
 
@@ -409,22 +532,28 @@ function bindCalendarEvents() {
 // 既存の予定編集処理を使用
 // ============================================================
 
-function openExistingSchedule(scheduleId) {
+function openExistingSchedule(
+    scheduleId
+) {
 
     const schedule =
         currentSchedules.find(
             schedule =>
-                Number(schedule.id) ===
-                scheduleId
+                Number(
+                    schedule.id
+                ) === scheduleId
         );
+
 
     if (!schedule) {
         return;
     }
 
+
     openScheduleEditModal(
         schedule
     );
+
 }
 
 
@@ -432,47 +561,15 @@ function openExistingSchedule(scheduleId) {
 // 日付
 // ============================================================
 
-function getDateKey(dateValue) {
-
-    if (!dateValue) {
-        return null;
-    }
-
+function formatCalendarDate(
+    dateKey
+) {
 
     const date =
-        new Date(dateValue);
+        parseDateKey(
+            dateKey
+        );
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-        return null;
-    }
-
-
-    const year =
-        date.getFullYear();
-
-    const month =
-        String(
-            date.getMonth() + 1
-        ).padStart(2, "0");
-
-    const day =
-        String(
-            date.getDate()
-        ).padStart(2, "0");
-
-
-    return `${year}-${month}-${day}`;
-}
-
-
-function formatCalendarDate(dateKey) {
-
-    const date =
-        parseDateKey(dateKey);
 
     if (!date) {
         return "";
@@ -496,10 +593,15 @@ function formatCalendarDate(dateKey) {
 }
 
 
-function formatCalendarDateShort(dateKey) {
+function formatCalendarDateShort(
+    dateKey
+) {
 
     const date =
-        parseDateKey(dateKey);
+        parseDateKey(
+            dateKey
+        );
+
 
     if (!date) {
         return "";
@@ -512,83 +614,20 @@ function formatCalendarDateShort(dateKey) {
 }
 
 
-function parseDateKey(dateKey) {
+// ============================================================
+// 属性値用サニタイズ
+// ============================================================
 
-    const [
-        year,
-        month,
-        day
-    ] = dateKey
-        .split("-")
-        .map(Number);
+function escapeAttribute(
+    value
+) {
 
-
-    const date =
-        new Date(
-            year,
-            month - 1,
-            day
+    return String(
+        value ?? ""
+    )
+        .replace(
+            /[^a-zA-Z0-9_-]/g,
+            ""
         );
 
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-        return null;
-    }
-
-
-    return date;
-}
-
-
-// ============================================================
-// 時刻
-// ============================================================
-
-function formatTime(dateValue) {
-
-    const date =
-        new Date(dateValue);
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-        return "";
-    }
-
-
-    return date.toLocaleTimeString(
-        "ja-JP",
-        {
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-}
-
-
-// ============================================================
-// HTMLエスケープ
-// ============================================================
-
-function escapeHtml(value) {
-
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-
-function escapeAttribute(value) {
-
-    return String(value ?? "")
-        .replace(/[^a-zA-Z0-9_-]/g, "");
 }

@@ -10,6 +10,10 @@ import {
     renderScheduleCalendar
 } from "../scheduleCalendar.js";
 
+import {
+    getDateKey
+} from "../../utils/date.js";
+
 
 /* ============================================================
    現在表示している予定
@@ -80,9 +84,9 @@ function groupSchedulesByDate(
         schedule => {
 
             const dateKey =
-                getScheduleDateKey(
+                getDateKey(
                     schedule.start_at
-                );
+                ) || "unknown";
 
 
             if (
@@ -217,61 +221,6 @@ function groupSchedulesByDate(
 
 
     return groups;
-
-}
-
-
-/* ============================================================
-   予定の日付キー
-   ============================================================ */
-
-function getScheduleDateKey(
-    startAt
-) {
-
-    if (!startAt) {
-        return "unknown";
-    }
-
-
-    const date =
-        new Date(
-            startAt
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return "unknown";
-
-    }
-
-
-    const year =
-        date.getFullYear();
-
-    const month =
-        String(
-            date.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-    const day =
-        String(
-            date.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    return `${year}-${month}-${day}`;
 
 }
 

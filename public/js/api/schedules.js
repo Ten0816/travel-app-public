@@ -1,24 +1,17 @@
-export async function getSchedules(
-    tripId
-) {
-
-    const response =
-        await fetch(
-            `./api/trips/${tripId}/schedules`
-        );
+import { apiRequest } from "./client.js";
 
 
-    if (!response.ok) {
+/* ============================================================
+   予定一覧取得
+   ============================================================ */
 
-        throw new Error(
-            "予定情報を取得できませんでした。"
-        );
+export function getSchedules(tripId) {
 
-    }
-
-
-    return response.json();
-
+    return apiRequest(
+        `/trips/${tripId}/schedules`,
+        {},
+        "予定を取得できませんでした。"
+    );
 }
 
 
@@ -26,53 +19,19 @@ export async function getSchedules(
    予定作成
    ============================================================ */
 
-export async function createSchedule(
-    tripId,
-    data
-) {
+export function createSchedule(tripId, data) {
 
-    const response =
-        await fetch(
-            `./api/trips/${tripId}/schedules`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "予定の作成に失敗しました。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-
-            message =
-                error.error ||
-                message;
-
-        } catch {
-        }
-
-
-        throw new Error(
-            message
-        );
-
-    }
-
-
-    return response.json();
-
+    return apiRequest(
+        `/trips/${tripId}/schedules`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        },
+        "予定の作成に失敗しました。"
+    );
 }
 
 
@@ -80,168 +39,63 @@ export async function createSchedule(
    予定更新
    ============================================================ */
 
-export async function updateSchedule(
-    id,
-    data
-) {
+export function updateSchedule(id, data) {
 
-    const response =
-        await fetch(
-            `./api/schedules/${id}`,
-            {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "予定の更新に失敗しました。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-
-            message =
-                error.error ||
-                message;
-
-        } catch {
-        }
-
-
-        throw new Error(
-            message
-        );
-
-    }
-
-
-    return response.json();
-
+    return apiRequest(
+        `/schedules/${id}`,
+        {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        },
+        "予定の更新に失敗しました。"
+    );
 }
 
 
 /* ============================================================
-   予定の実施状態を変更
+   予定ステータス変更
    ============================================================ */
 
-export async function updateScheduleStatus(
-    id,
-    status
-) {
+export function updateScheduleStatus(id, status) {
 
-    const response =
-        await fetch(
-            `./api/schedules/${id}/status`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    status
-                })
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "予定の実施状態を変更できませんでした。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-
-            message =
-                error.error ||
-                message;
-
-        } catch {
-        }
-
-
-        throw new Error(
-            message
-        );
-
-    }
-
-
-    return response.json();
-
+    return apiRequest(
+        `/schedules/${id}/status`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                status
+            })
+        },
+        "予定の実施状態を変更できませんでした。"
+    );
 }
 
 
 /* ============================================================
-   予定の並び順を一括変更
+   予定並び順更新
    ============================================================ */
 
-export async function updateScheduleOrders(
-    orders
-) {
+export function updateScheduleOrders(orders) {
 
-    const response =
-        await fetch(
-            "./api/schedules/order",
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    orders
-                })
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "予定の並び順を変更できませんでした。";
-
-
-        try {
-
-            const data =
-                await response.json();
-
-
-            if (data.error) {
-
-                message =
-                    data.error;
-
-            }
-
-        } catch {
-            // JSONでない場合はデフォルトメッセージ
-        }
-
-
-        throw new Error(
-            message
-        );
-
-    }
-
-
-    return response.json();
-
+    return apiRequest(
+        "/schedules/order",
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                orders
+            })
+        },
+        "予定の並び順を変更できませんでした。"
+    );
 }
 
 
@@ -249,48 +103,15 @@ export async function updateScheduleOrders(
    予定 → 候補イベント
    ============================================================ */
 
-export async function moveScheduleToEvent(
-    id
-) {
+export function moveScheduleToEvent(id) {
 
-    const response =
-        await fetch(
-            `./api/schedules/${id}/move-to-event`,
-            {
-                method: "POST"
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "予定を候補イベントに移動できませんでした。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-
-            message =
-                error.error ||
-                message;
-
-        } catch {
-        }
-
-
-        throw new Error(
-            message
-        );
-
-    }
-
-
-    return response.json();
-
+    return apiRequest(
+        `/schedules/${id}/move-to-event`,
+        {
+            method: "POST"
+        },
+        "候補イベントへの移動に失敗しました。"
+    );
 }
 
 
@@ -298,43 +119,13 @@ export async function moveScheduleToEvent(
    予定削除
    ============================================================ */
 
-export async function deleteSchedule(
-    id
-) {
+export function deleteSchedule(id) {
 
-    const response =
-        await fetch(
-            `./api/schedules/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
-
-
-    if (!response.ok) {
-
-        let message =
-            "予定の削除に失敗しました。";
-
-
-        try {
-
-            const error =
-                await response.json();
-
-
-            message =
-                error.error ||
-                message;
-
-        } catch {
-        }
-
-
-        throw new Error(
-            message
-        );
-
-    }
-
+    return apiRequest(
+        `/schedules/${id}`,
+        {
+            method: "DELETE"
+        },
+        "予定の削除に失敗しました。"
+    );
 }

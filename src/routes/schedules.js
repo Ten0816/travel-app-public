@@ -6,6 +6,14 @@ const {
     normalizeString
 } = require("../utils/normalize");
 
+const {
+    findOverlappingSchedule
+} = require("../utils/schedule");
+
+const {
+    parsePositiveInteger
+} = require("../utils/validation");
+
 
 const router = express.Router();
 
@@ -17,10 +25,12 @@ const router = express.Router();
 router.get("/trips/:id/schedules", (req, res) => {
 
     const tripId =
-        Number(req.params.id);
+        parsePositiveInteger(
+            req.params.id
+        );
 
 
-    if (!Number.isInteger(tripId) || tripId <= 0) {
+    if (tripId === null) {
         return res.status(400).json({
             error: "Invalid trip id"
         });
@@ -46,14 +56,14 @@ router.get("/trips/:id/schedules", (req, res) => {
         FROM schedules
         WHERE trip_id = ?
         ORDER BY
-    CASE
-        WHEN start_at IS NULL OR start_at = '' THEN 1
-        ELSE 0
-    END,
-    substr(start_at, 1, 10) ASC,
-    sort_order ASC,
-    start_at ASC,
-    id ASC
+            CASE
+                WHEN start_at IS NULL OR start_at = '' THEN 1
+                ELSE 0
+            END,
+            substr(start_at, 1, 10) ASC,
+            sort_order ASC,
+            start_at ASC,
+            id ASC
     `).all(tripId);
 
 
@@ -70,13 +80,12 @@ router.post(
     (req, res) => {
 
         const scheduleId =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(scheduleId) ||
-            scheduleId <= 0
-        ) {
+        if (scheduleId === null) {
 
             return res.status(400).json({
                 error: "Invalid schedule id"
@@ -110,6 +119,7 @@ router.post(
                     /*
                      * 予定を候補イベントとして作成
                      */
+
                     const result =
                         db.prepare(`
                             INSERT INTO events (
@@ -172,6 +182,7 @@ router.post(
                     /*
                      * 元の予定を削除
                      */
+
                     db.prepare(`
                         DELETE FROM schedules
                         WHERE id = ?
@@ -210,10 +221,12 @@ router.post(
 router.post("/trips/:id/schedules", (req, res) => {
 
     const tripId =
-        Number(req.params.id);
+        parsePositiveInteger(
+            req.params.id
+        );
 
 
-    if (!Number.isInteger(tripId) || tripId <= 0) {
+    if (tripId === null) {
         return res.status(400).json({
             error: "Invalid trip id"
         });
@@ -299,8 +312,9 @@ router.post("/trips/:id/schedules", (req, res) => {
 
 
     /*
- * 時間重複チェック
- */
+     * 時間重複チェック
+     */
+
     const overlappingSchedule =
         findOverlappingSchedule(
             tripId,
@@ -373,13 +387,12 @@ router.patch(
     (req, res) => {
 
         const id =
-            Number(req.params.id);
+            parsePositiveInteger(
+                req.params.id
+            );
 
 
-        if (
-            !Number.isInteger(id) ||
-            id <= 0
-        ) {
+        if (id === null) {
 
             return res.status(400).json({
                 error: "Invalid schedule id"
@@ -465,6 +478,7 @@ router.patch(
         /*
          * 配列であることを確認
          */
+
         if (
             !Array.isArray(orders) ||
             orders.length === 0
@@ -480,6 +494,7 @@ router.patch(
         /*
          * 各要素を検証
          */
+
         for (const order of orders) {
 
             if (
@@ -506,6 +521,7 @@ router.patch(
         /*
          * IDの重複を確認
          */
+
         const ids =
             orders.map(
                 order =>
@@ -566,6 +582,7 @@ router.patch(
                          * 含まれていた場合は
                          * トランザクション全体を失敗させる
                          */
+
                         if (
                             result.changes === 0
                         ) {
@@ -582,6 +599,7 @@ router.patch(
                     /*
                      * 更新後の予定を取得
                      */
+
                     const placeholders =
                         ids
                             .map(
@@ -645,13 +663,12 @@ router.patch(
 router.put("/schedules/:id", (req, res) => {
 
     const id =
-        Number(req.params.id);
+        parsePositiveInteger(
+            req.params.id
+        );
 
 
-    if (
-        !Number.isInteger(id) ||
-        id <= 0
-    ) {
+    if (id === null) {
 
         return res.status(400).json({
             error: "Invalid schedule id"
@@ -760,10 +777,11 @@ router.put("/schedules/:id", (req, res) => {
 
 
     /*
- * 時間重複チェック
- *
- * 自分自身は除外する
- */
+     * 時間重複チェック
+     *
+     * 自分自身は除外する
+     */
+
     const overlappingSchedule =
         findOverlappingSchedule(
             existingSchedule.trip_id,
@@ -786,6 +804,7 @@ router.put("/schedules/:id", (req, res) => {
     /*
      * 元の予定の日付
      */
+
     const oldDate =
         getScheduleDateKey(
             existingSchedule.start_at
@@ -795,6 +814,7 @@ router.put("/schedules/:id", (req, res) => {
     /*
      * 更新後の予定の日付
      */
+
     const newDate =
         getScheduleDateKey(
             startAt
@@ -804,6 +824,7 @@ router.put("/schedules/:id", (req, res) => {
     /*
      * 日付が変わったか
      */
+
     const dateChanged =
         oldDate !== newDate;
 
@@ -819,6 +840,7 @@ router.put("/schedules/:id", (req, res) => {
                  * 元の日付から予定を外すため、
                  * まず通常のUPDATEを行う。
                  */
+
                 db.prepare(`
                     UPDATE schedules
                     SET
@@ -856,6 +878,7 @@ router.put("/schedules/:id", (req, res) => {
                 /*
                  * 日付が変わった場合
                  */
+
                 if (dateChanged) {
 
                     /*
@@ -865,6 +888,7 @@ router.put("/schedules/:id", (req, res) => {
                      * まだ元のsort_orderを持っているため、
                      * 移動先の予定数だけ取得する。
                      */
+
                     const lastSchedule =
                         db.prepare(`
                             SELECT sort_order
@@ -903,6 +927,7 @@ router.put("/schedules/:id", (req, res) => {
                     /*
                      * 移動先の日付の末尾へ
                      */
+
                     db.prepare(`
                         UPDATE schedules
                         SET
@@ -918,6 +943,7 @@ router.put("/schedules/:id", (req, res) => {
                     /*
                      * 元の日付側のsort_orderを詰め直す
                      */
+
                     const oldDateSchedules =
                         db.prepare(`
                             SELECT id
@@ -974,6 +1000,7 @@ router.put("/schedules/:id", (req, res) => {
                 /*
                  * 更新後の最新データを取得
                  */
+
                 return db.prepare(`
                     SELECT *
                     FROM schedules
@@ -1003,60 +1030,6 @@ router.put("/schedules/:id", (req, res) => {
     }
 
 });
-
-
-/* ============================================================
-   予定の時間重複チェック
-   ============================================================ */
-
-function findOverlappingSchedule(
-    tripId,
-    startAt,
-    endAt,
-    excludeId = null
-) {
-
-    /*
-     * 開始・終了のどちらかがない場合は
-     * 時間帯を判定できないため対象外
-     */
-    if (!startAt || !endAt) {
-        return null;
-    }
-
-
-    const overlappingSchedule =
-        db.prepare(`
-            SELECT *
-            FROM schedules
-            WHERE
-                trip_id = ?
-                AND start_at IS NOT NULL
-                AND start_at != ''
-                AND end_at IS NOT NULL
-                AND end_at != ''
-                AND start_at < ?
-                AND end_at > ?
-                AND (
-                    ? IS NULL
-                    OR id != ?
-                )
-            ORDER BY
-                start_at ASC,
-                id ASC
-            LIMIT 1
-        `).get(
-            tripId,
-            endAt,
-            startAt,
-            excludeId,
-            excludeId
-        );
-
-
-    return overlappingSchedule || null;
-
-}
 
 
 /* ============================================================
@@ -1125,10 +1098,12 @@ function getScheduleDateKey(
 router.delete("/schedules/:id", (req, res) => {
 
     const id =
-        Number(req.params.id);
+        parsePositiveInteger(
+            req.params.id
+        );
 
 
-    if (!Number.isInteger(id) || id <= 0) {
+    if (id === null) {
         return res.status(400).json({
             error: "Invalid schedule id"
         });
