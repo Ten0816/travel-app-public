@@ -240,10 +240,7 @@ if (
         new ResizeObserver(
             () => {
 
-                if (
-                    isMobile() &&
-                    showingScheduleList
-                ) {
+                if (isMobile()) {
 
                     updateWrapperHeight();
                 }
@@ -257,8 +254,11 @@ if (
 
 
     /* ========================================================
-       初期状態
-       ======================================================== */
+   初期状態
+   ======================================================== */
+
+    scheduleLayout.style.transform =
+        "translateX(0)";
 
     updateWrapperHeight();
 
